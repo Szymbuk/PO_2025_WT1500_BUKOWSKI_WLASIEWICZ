@@ -56,21 +56,14 @@ public class Animal implements WorldElement{
         return this.position.equals(position);
     }
 
-    public void move(MoveDirection orientation, MoveValidator validator){
-        this.orientation = switch(orientation){
-            case RIGHT -> this.orientation.next();
-            case LEFT -> this.orientation.previous();
-            case FORWARD,BACKWARD -> this.orientation;
-        };
-
-        Vector2d moveVector = switch (orientation){
-            case RIGHT,LEFT -> new Vector2d(0,0);
-            case FORWARD -> this.orientation.toUnitVector();
-            case BACKWARD -> this.orientation.toUnitVector().opposite();
-        };
+    public void move(MoveValidator validator){
+        Vector2d moveVector = orientation.toUnitVector();
         Vector2d new_position = position.add(moveVector);
         if (validator.canMoveTo(new_position)) {
             position = new_position;
+        }
+        else{
+            position = validator.correctPosition(position,this);
         }
     }
 
@@ -83,9 +76,15 @@ public class Animal implements WorldElement{
         return orientation;
     }
 
-    public Integer nextGen(){
+    public void turnAround(){
+        orientation = orientation.rotate(4);
+    }
+
+    public void nextGen(){
+        //aktywuje kolejny gen (pomija ostatni gen odpowiedzialny za płeć)
         currentGeneIndex = (currentGeneIndex +1)%(genotype.size()-2);
-        return genotype.get(currentGeneIndex);
+        Integer gene = genotype.get(currentGeneIndex);
+        orientation = orientation.rotate(gene);
     }
 
     public List<Integer> breed(boolean leftside, int n,int energyLoss){
