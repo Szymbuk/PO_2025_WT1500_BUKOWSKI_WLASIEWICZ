@@ -11,31 +11,30 @@ public class Animal implements WorldElement{
     private int energy;
     private final List<Integer> genotype = new ArrayList<>();
     private int currentGeneIndex;
-    private Gender gender;
+    private final Gender gender;
     private int childrenNumber = 0;
     private int age = 0;
 
-    public Animal(MapDirection orientation, Vector2d position,int genNumber){
+    public Animal(MapDirection orientation, Vector2d position,int genNumber,Gender gender){
         this.orientation = orientation;
         this.position = position;
+        this.gender = gender;
 
         Random rand = new Random();
         for (int i =0; i<genNumber; i++){
 
             genotype.add(rand.nextInt(7));
         }
-        genotype.add(rand.nextInt(1));
-        gender = switch (genotype.getLast()){
-            case 0 -> Gender.Male;
-            case 1 -> Gender.Female;
-            case null, default -> throw new IllegalStateException("Last gene must be 1 or 0");
+        int lastGen = switch (gender){
+            case Male -> 0;
+            case Female -> 1;
         };
+        genotype.add(lastGen);
     }
-    public Animal(Vector2d position,int genNumber){
-        this(MapDirection.NORTH,position,genNumber);
+    public Animal(Vector2d position,int genNumber, Gender gender){
+        this(MapDirection.NORTH,position,genNumber, gender);
     }
 
-    public Animal(int genNumber){this(new Vector2d(2,2),genNumber);}
 
     @Override
     public String toString(){
@@ -97,6 +96,10 @@ public class Animal implements WorldElement{
         else{
             return genotype.subList(genotype.size()-n,genotype.size());
         }
+    }
+
+    public void eat(int energyGained){
+        energy += energyGained;
     }
 
     public int getEnergy() {

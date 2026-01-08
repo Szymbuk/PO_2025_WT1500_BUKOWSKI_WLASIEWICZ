@@ -4,6 +4,7 @@ import jdk.jshell.spi.ExecutionControl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Simulation {
     private final int mapHeight;
@@ -25,7 +26,7 @@ public class Simulation {
     private final WorldMap map;
     private final List<Animal> animals = new ArrayList<>();
     private final List<Animal> deadAnimals = new ArrayList<>();
-    private int currentPlants;
+    private int currentPlants = 0;
 
     private Simulation(SimulationBuilder builder){
         this.mapHeight = builder.mapHeight;
@@ -57,7 +58,7 @@ public class Simulation {
         for (int i=0; i<10; i++){
             deleteDeathAnimals();
             moveAnimals();
-            plantConsumption();
+            map.consumePlants(plantEnergyGain);
             animalsProcreation();
 
             numberOfPlants = howManyPlants(plantDailyGrowth);
@@ -69,18 +70,36 @@ public class Simulation {
 
     }
 
-    private void createAnimals() throws ExecutionControl.NotImplementedException {
-        throw new ExecutionControl.NotImplementedException("Niezaimplementowano createAnimals");
+    private void createAnimals(){
+        Random random = new Random();
+        for (int i =0; i< maleNumber; i++){
+            int x = random.nextInt(0,mapWidth);
+            int y = random.nextInt(0,mapHeight);
+            Vector2d position = new Vector2d(x,y);
+            Animal animal = new Animal(position,genomLength,Gender.Male);
+            animals.add(animal);
+            map.place(animal);
+        }
+        for (int i =0; i< femaleNumber; i++){
+            int x = random.nextInt(0,mapWidth);
+            int y = random.nextInt(0,mapHeight);
+            Vector2d position = new Vector2d(x,y);
+            Animal animal = new Animal(position,genomLength,Gender.Female);
+            animals.add(animal);
+            map.place(animal);
+        }
     }
 
     private void deleteDeathAnimals() throws ExecutionControl.NotImplementedException {
         for (Animal animal : animals){
             if (animal.getEnergy()<=0){
                 map.removeAnimal(animal);
+                animals.remove(animal);
+                deadAnimals.add(animal);
             }
         }
         //zapewniona podstawowa funkcjonalność
-        throw new ExecutionControl.NotImplementedException("Niezaimplementowano deleteDeathAnimals");
+        //throw new ExecutionControl.NotImplementedException("Niezaimplementowano deleteDeathAnimals");
     }
 
     private void moveAnimals() throws ExecutionControl.NotImplementedException {
@@ -91,10 +110,6 @@ public class Simulation {
        }
         //zapewniona podstawowa funkcjonalność
         //throw new ExecutionControl.NotImplementedException("Niezaimplementowano moveAnimals");
-    }
-
-    private void plantConsumption() throws ExecutionControl.NotImplementedException {
-        throw new ExecutionControl.NotImplementedException("Niezaimplementowano plantConsumption");
     }
 
     private void animalsProcreation() throws ExecutionControl.NotImplementedException {

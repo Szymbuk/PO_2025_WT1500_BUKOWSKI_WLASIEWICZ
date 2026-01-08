@@ -1,13 +1,9 @@
 package project.model;
 
-import jdk.jshell.spi.ExecutionControl;
 import project.model.util.MapVisualizer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.random.RandomGenerator;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class WorldMap implements MoveValidator {
     private final int width;
@@ -233,6 +229,51 @@ public class WorldMap implements MoveValidator {
         return flag;
     }
 
+    public void consumePlants(int energyGain){
+        List<Vector2d> plantsPositionsToDelete = new ArrayList<>();
+        for (Vector2d position:  plants.keySet()){
+            List<Animal> hungryAnimals = animals.getOrDefault(position,null);
+            if (hungryAnimals == null){
+                continue;
+            }
+            hungryAnimals.sort(Comparator.comparing(Animal::getEnergy).thenComparing(Animal::getAge).thenComparing(Animal::getChildrenNumber));
+            IO.println("first: %s".formatted(hungryAnimals.getFirst()));
+            IO.println("last: %s".formatted(hungryAnimals.getLast()));
+            Animal winner = hungryAnimals.getLast();
+            winner.eat(energyGain);
+            plantsPositionsToDelete.add(position);
+        }
+        for (Vector2d position : plantsPositionsToDelete){
+            plants.remove(position);
+        }
+    }
+    
+    public void procreate(){
+        for (Vector2d position : animals.keySet()){
+            List<Animal> animalsToBreed = animals.get(position);
+            animalsToBreed.sort(Comparator.comparing(Animal::getEnergy).thenComparing(Animal::getAge).thenComparing(Animal::getChildrenNumber));
+
+            Animal strongestMale = null;
+            Animal strongestFemale = null;
+            int i = animalsToBreed.size()-1;
+            while ((strongestFemale == null || strongestMale ==null) && i>0){
+                if (animalsToBreed.get(i).getGender().equals(Gender.Male) && strongestMale==null){
+                    strongestMale = animalsToBreed.get(i);
+                }
+                else if(animalsToBreed.get(i).getGender().equals(Gender.Female) && strongestFemale==null){
+                    strongestFemale = animalsToBreed.get(i);
+                }
+                i-=1;
+            }
+            if (strongestFemale == null || strongestMale == null){
+                continue;
+            }
+
+            // dokończyć logikę rozmnażania
+
+        }
+    }
+
 
     public void removeAnimal(Animal animal){
         animals.get(animal.getPosition()).remove(animal);
@@ -242,11 +283,6 @@ public class WorldMap implements MoveValidator {
     public boolean isOccupied(Vector2d position) {
         return (animals.containsKey(position)||plants.containsKey(position));
     }
-
-//      Chyba niepotrzebne poza tym jak to zaimplementować?
-//    public WorldElement objectAt(Vector2d position) {
-//        return animals.getOrDefault(position, null);
-//    }
 
 
     public HashMap<Vector2d, List<WorldElement>> getElements() {
