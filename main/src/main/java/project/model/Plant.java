@@ -19,6 +19,6 @@ public class Plant implements WorldElement{
 
     @Override
     public String toString(){
-        return "*";
+        return " * ";
     }
 }

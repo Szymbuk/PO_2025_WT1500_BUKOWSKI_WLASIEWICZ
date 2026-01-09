@@ -11,5 +11,5 @@ public interface MoveValidator {
      */
     boolean canMoveTo(Vector2d position);
 
-    Vector2d correctPosition(Vector2d position,Animal animal);
+    Vector2d correctPosition(Vector2d oldPosition,Vector2d newPosition,Animal animal);
 }

@@ -18,7 +18,7 @@ public class Simulation {
     private final int energyStartLevel;
     private final int energyDailLoss;
     private final int energyBreadingThreshold;
-    private final int energyBreadingLoss;
+    private final double energyBreadingLoss;
     private final int minMutation;
     private final int maxMutation;
     private final int genomLength;
@@ -49,7 +49,7 @@ public class Simulation {
 
     }
     public void run() throws ExecutionControl.NotImplementedException {
-
+        map.addListener(new ConsoleMapDisplay());
         createAnimals();
         int numberOfPlants = howManyPlants(plantStartingQuantity);
         map.generatePlants(numberOfPlants);
@@ -58,12 +58,14 @@ public class Simulation {
         for (int i=0; i<10; i++){
             deleteDeathAnimals();
             moveAnimals();
-            map.consumePlants(plantEnergyGain);
+            currentPlants -= map.consumePlants(plantEnergyGain);
             animalsProcreation();
 
             numberOfPlants = howManyPlants(plantDailyGrowth);
             map.generatePlants(numberOfPlants);
             currentPlants += numberOfPlants;
+
+            animalsDailyEnergyLoss();
 
 
         }
@@ -76,7 +78,7 @@ public class Simulation {
             int x = random.nextInt(0,mapWidth);
             int y = random.nextInt(0,mapHeight);
             Vector2d position = new Vector2d(x,y);
-            Animal animal = new Animal(position,genomLength,Gender.Male);
+            Animal animal = new Animal(position,genomLength,Gender.Male,energyStartLevel);
             animals.add(animal);
             map.place(animal);
         }
@@ -84,20 +86,30 @@ public class Simulation {
             int x = random.nextInt(0,mapWidth);
             int y = random.nextInt(0,mapHeight);
             Vector2d position = new Vector2d(x,y);
-            Animal animal = new Animal(position,genomLength,Gender.Female);
+            Animal animal = new Animal(position,genomLength,Gender.Female,energyStartLevel);
             animals.add(animal);
             map.place(animal);
         }
+        map.mapChanged("Dodano początkowe zwierzęta");
     }
 
     private void deleteDeathAnimals() throws ExecutionControl.NotImplementedException {
+        boolean flag = false;
+        List<Animal> animalsToRemove = new ArrayList<>();
         for (Animal animal : animals){
             if (animal.getEnergy()<=0){
                 map.removeAnimal(animal);
-                animals.remove(animal);
+                animalsToRemove.add(animal);
                 deadAnimals.add(animal);
+                flag = true;
+
             }
         }
+        for (Animal animal : animalsToRemove){
+            animals.remove(animal);
+        }
+        if (flag){map.mapChanged("Usunięto martwe zwierzęta");}
+
         //zapewniona podstawowa funkcjonalność
         //throw new ExecutionControl.NotImplementedException("Niezaimplementowano deleteDeathAnimals");
     }
@@ -108,18 +120,62 @@ public class Simulation {
            animal.addAge();
            animal.nextGen();
        }
+       map.mapChanged("Zwierzęta poruszyły się");
         //zapewniona podstawowa funkcjonalność
         //throw new ExecutionControl.NotImplementedException("Niezaimplementowano moveAnimals");
     }
 
     private void animalsProcreation() throws ExecutionControl.NotImplementedException {
-        throw new ExecutionControl.NotImplementedException("Niezaimplementowano animalsProcreation");
+        List<AnimalPair> animalsToBreed= map.procreate();
+        Random random = new Random();
+        for (AnimalPair animalPair : animalsToBreed){
+            Animal male = animalPair.male();
+            Animal female = animalPair.female();
+            int totalEnergy = male.getEnergy() + female.getEnergy();
+            double malePart = (double) male.getEnergy() /totalEnergy;
+            int maleGens = (int) (genomLength*malePart);
+            int femaleGens = genomLength-maleGens;
+            List<Integer> newGenotype = new ArrayList<>();
+            int maleEnergyLoss = (int) (male.getEnergy()*energyBreadingLoss);
+            int femaleEnergyLoss = (int) (female.getEnergy()*energyBreadingLoss);
+
+            if (random.nextBoolean()){
+                newGenotype.addAll(male.breed(true,maleGens,maleEnergyLoss));
+                newGenotype.addAll(female.breed(false,femaleGens,femaleEnergyLoss));
+            }
+            else{
+                newGenotype.addAll(female.breed(true,femaleGens,femaleEnergyLoss));
+                newGenotype.addAll(male.breed(false,maleGens,maleEnergyLoss));
+            }
+            int x = random.nextInt(0,mapWidth);
+            int y = random.nextInt(0,mapHeight);
+            Vector2d position = new Vector2d(x,y);
+            Gender newGender = switch(newGenotype.getLast()){
+                case 0 -> Gender.Male;
+                case 1 -> Gender.Female;
+                case null, default -> throw new IllegalStateException("Nieprawidłowy gen płci w nowym genotypie");
+            };
+            Animal newAnimal = new Animal(position,newGenotype,newGender,maleEnergyLoss+femaleEnergyLoss-habsburgEnergyLossCalculation(animalPair));
+            map.place(newAnimal);
+            animals.add(newAnimal);
+        }
+    }
+
+    private int habsburgEnergyLossCalculation(AnimalPair animalPair){
+        IO.println("Niezaimplemenotawno straty energii Habsburgów");
+        return 0;
     }
 
     private int howManyPlants(int plants){
         int maxPlants = mapWidth*mapHeight - currentPlants;
         return Math.min(plants, maxPlants);
 
+    }
+
+    private void animalsDailyEnergyLoss(){
+        for (Animal animal: animals){
+            animal.dailyEnergyLoss(energyDailLoss);
+        }
     }
 
 
@@ -143,14 +199,14 @@ public class Simulation {
         private Integer energyStartLevel;
         private Integer energyDailLoss;
         private Integer energyBreadingThreshold;
-        private Integer energyBreadingLoss;
+        private Double energyBreadingLoss;
         private Integer genomLength;
         private Integer minMutation = 0;
         private Integer maxMutation;
 
 
 
-        public SimulationBuilder setEnergyBreadingLoss(Integer energyBreadingLoss) {
+        public SimulationBuilder setEnergyBreadingLoss(Double energyBreadingLoss) {
             this.energyBreadingLoss = energyBreadingLoss;
             return this;
         }
@@ -253,7 +309,7 @@ public class Simulation {
             return this;
         }
 
-        public SimulationBuilder setEnergyDetails(Integer energyStartLevel, Integer energyDailLoss, Integer energyBreadingThreshold, Integer energyBreadingLoss){
+        public SimulationBuilder setEnergyDetails(Integer energyStartLevel, Integer energyDailLoss, Integer energyBreadingThreshold, Double energyBreadingLoss){
             this.energyStartLevel = energyStartLevel;
             this.energyDailLoss = energyDailLoss;
             this.energyBreadingThreshold = energyBreadingThreshold;

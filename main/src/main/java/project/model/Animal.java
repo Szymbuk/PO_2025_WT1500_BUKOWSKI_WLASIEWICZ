@@ -15,38 +15,62 @@ public class Animal implements WorldElement{
     private int childrenNumber = 0;
     private int age = 0;
 
-    public Animal(MapDirection orientation, Vector2d position,int genNumber,Gender gender){
-        this.orientation = orientation;
-        this.position = position;
-        this.gender = gender;
 
+
+    public Animal(Vector2d position,int genNumber, Gender gender, int energy){
+        //używany do tworzenia początkowych zwierząt (nieznany genotyp)
+        this(position,gender,energy);
         Random rand = new Random();
-        for (int i =0; i<genNumber; i++){
 
+        for (int i =0; i<genNumber; i++){
             genotype.add(rand.nextInt(7));
         }
+        currentGeneIndex = rand.nextInt(0,genotype.size()-1); // przed dodaniem genu płci
+
+        int lastGen = switch (gender){
+            case Male -> 0;
+            case Female -> 1;
+        };
+
+        genotype.add(lastGen);
+    }
+
+    public Animal(Vector2d position, List<Integer> genotype, Gender gender, int energy){
+        // używany do tworzenia zwierząt w wyniku rozmnażania (znany genotyp)
+        this(position,gender,energy);
+
+        this.genotype.addAll(genotype);
+        Random rand = new Random();
+        currentGeneIndex = rand.nextInt(0,genotype.size()-1); // przed dodaniem genu płci
         int lastGen = switch (gender){
             case Male -> 0;
             case Female -> 1;
         };
         genotype.add(lastGen);
     }
-    public Animal(Vector2d position,int genNumber, Gender gender){
-        this(MapDirection.NORTH,position,genNumber, gender);
+
+    public Animal(Vector2d position, Gender gender, int energy){
+        this.position = position;
+        this.gender = gender;
+        this.energy = energy;
+
+        Random rand = new Random();
+        this.orientation = MapDirection.NORTH.rotate(rand.nextInt(0,7));
     }
+
 
 
     @Override
     public String toString(){
         return switch (orientation){
-            case NORTH -> "N";
-            case NORTHEAST -> "NE";
-            case NORTHWEST -> "NW";
-            case SOUTH -> "S";
-            case SOUTHEAST -> "SE";
-            case SOUTHWEST -> "SW";
-            case EAST -> "E";
-            case WEST -> "W";
+            case NORTH -> " N ";
+            case NORTHEAST -> "NE ";
+            case NORTHWEST -> "NW ";
+            case SOUTH -> " S ";
+            case SOUTHEAST -> "SE ";
+            case SOUTHWEST -> "SW ";
+            case EAST -> " E ";
+            case WEST -> " W ";
         };
     }
 
@@ -56,13 +80,14 @@ public class Animal implements WorldElement{
     }
 
     public void move(MoveValidator validator){
+        Vector2d previousPosition = position;
         Vector2d moveVector = orientation.toUnitVector();
-        Vector2d new_position = position.add(moveVector);
-        if (validator.canMoveTo(new_position)) {
-            position = new_position;
+        Vector2d newPosition = position.add(moveVector);
+        if (validator.canMoveTo(newPosition)) {
+            position = newPosition;
         }
         else{
-            position = validator.correctPosition(position,this);
+            position = validator.correctPosition(previousPosition,newPosition,this);
         }
     }
 
@@ -120,5 +145,9 @@ public class Animal implements WorldElement{
 
     public void addAge(){
         age+=1;
+    }
+
+    public void dailyEnergyLoss(int energyLost){
+        energy -= energyLost;
     }
 }

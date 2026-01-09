@@ -49,34 +49,33 @@ public class WorldMap implements MoveValidator {
                 if (! animals.containsKey(position)){
                     animals.put(position,new ArrayList<>());
                 }
-                String message = "Dodano zwierze";
                 animals.get(animal.getPosition()).add(animal);
-                mapChanged(message);
             }
+
     }
 
     @Override
     public boolean canMoveTo(Vector2d position) {
-        return (!isOccupied(position) &&  position.precedes(end) && position.follows(beginning));
+        return (position.precedes(end) && position.follows(beginning));
     }
 
     @Override
-    public Vector2d correctPosition(Vector2d position,Animal animal) {
-        if (position.y() <beginning.y() || position.y() > end.y()){
+    public Vector2d correctPosition(Vector2d oldPosition,Vector2d newPositon,Animal animal) {
+        if (newPositon.y() <beginning.y() || newPositon.y() > end.y()){
             animal.turnAround();
-            return position;
+            return oldPosition;
         }
 
         int x;
-        if (position.x() < beginning.x()){
+        if (newPositon.x() < beginning.x()){
             x = end.x();
-        } else if (position.x() > end.x()) {
+        } else if (newPositon.x() > end.x()) {
             x = beginning.x();
         }
         else{
-            x = position.x();
+            x = newPositon.x();
         }
-        return new Vector2d(x,position.y());
+        return new Vector2d(x,newPositon.y());
     }
 
 
@@ -92,15 +91,15 @@ public class WorldMap implements MoveValidator {
         }
         animal.move(this);
         Vector2d newPosition = animal.getPosition();
-        animals.get(animal.getPosition()).remove(animal);
+        animals.get(animal.getPosition()).remove(animal); // z jakiegoś powodu próbuje usunąć zwierzę z miejsca w którym go nie było?
         animals.get(newPosition).add(animal);
 
         if (!previousPosition.equals(newPosition)) {
-            String message = "Zwierze poruszylo sie na pozycję %s".formatted(newPosition);
-            mapChanged(message);
+            //String message = "Zwierze poruszylo sie na pozycję %s".formatted(newPosition);
+            //mapChanged(message);
         } else{
-            String message = "Zwierze odbilo sie, jego aktualny zwrot to %s".formatted(animal.getOrientation());
-            mapChanged(message);
+            //String message = "Zwierze odbilo sie, jego aktualny zwrot to %s".formatted(animal.getOrientation());
+            //mapChanged(message);
         }
     }
 
@@ -229,26 +228,30 @@ public class WorldMap implements MoveValidator {
         return flag;
     }
 
-    public void consumePlants(int energyGain){
+    public int consumePlants(int energyGain){
         List<Vector2d> plantsPositionsToDelete = new ArrayList<>();
+        int plantsConsumed = 0;
         for (Vector2d position:  plants.keySet()){
             List<Animal> hungryAnimals = animals.getOrDefault(position,null);
-            if (hungryAnimals == null){
+            if (hungryAnimals == null || hungryAnimals.isEmpty()){
                 continue;
             }
             hungryAnimals.sort(Comparator.comparing(Animal::getEnergy).thenComparing(Animal::getAge).thenComparing(Animal::getChildrenNumber));
-            IO.println("first: %s".formatted(hungryAnimals.getFirst()));
-            IO.println("last: %s".formatted(hungryAnimals.getLast()));
+            //IO.println("first: %s".formatted(hungryAnimals.getFirst()));
+            //IO.println("last: %s".formatted(hungryAnimals.getLast()));
             Animal winner = hungryAnimals.getLast();
             winner.eat(energyGain);
+            plantsConsumed +=1;
             plantsPositionsToDelete.add(position);
         }
         for (Vector2d position : plantsPositionsToDelete){
             plants.remove(position);
         }
+        return plantsConsumed;
     }
     
-    public void procreate(){
+    public List<AnimalPair> procreate(){
+        List<AnimalPair> pairList = new ArrayList<>();
         for (Vector2d position : animals.keySet()){
             List<Animal> animalsToBreed = animals.get(position);
             animalsToBreed.sort(Comparator.comparing(Animal::getEnergy).thenComparing(Animal::getAge).thenComparing(Animal::getChildrenNumber));
@@ -268,10 +271,9 @@ public class WorldMap implements MoveValidator {
             if (strongestFemale == null || strongestMale == null){
                 continue;
             }
-
-            // dokończyć logikę rozmnażania
-
+            pairList.add(new AnimalPair(strongestMale,strongestFemale));
         }
+        return pairList;
     }
 
 
@@ -322,6 +324,18 @@ public class WorldMap implements MoveValidator {
     @Override
     public String toString() {
         return new MapVisualizer(this).draw(getCurrentBounds().lowerLeft(), getCurrentBounds().upperRight());
+    }
+
+    public WorldElement objectAt(Vector2d position) {
+        if (animals.containsKey(position)) {
+            if (!animals.get(position).isEmpty())
+            {
+                List<Animal> strongestAnimals = animals.get(position);
+                strongestAnimals.sort(Comparator.comparing(Animal::getEnergy).thenComparing(Animal::getAge).thenComparing(Animal::getChildrenNumber));
+                return strongestAnimals.getLast();
+            }
+        }
+        return plants.getOrDefault(position,null);
     }
 }
 
