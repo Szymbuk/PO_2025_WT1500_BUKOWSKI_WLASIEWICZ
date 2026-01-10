@@ -1,9 +1,11 @@
 package project.model;
 
 import jdk.jshell.spi.ExecutionControl;
+import project.model.util.FamilyStructure;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 public class Simulation {
@@ -27,10 +29,11 @@ public class Simulation {
     private final List<Animal> animals = new ArrayList<>();
     private final List<Animal> deadAnimals = new ArrayList<>();
     private int currentPlants = 0;
+    private final FamilyStructure familyStructure = new FamilyStructure();
 
     private Simulation(SimulationBuilder builder){
-        this.mapHeight = builder.mapHeight;
-        this.mapWidth = builder.mapWidth;
+        this.mapHeight = builder.mapHeight -1;
+        this.mapWidth = builder.mapWidth -1;
         this.maleNumber = builder.maleNumber;
         this.femaleNumber = builder.femaleNumber;
         this.habsburgEnergyLoss = builder.habsburgEnergyLoss;
@@ -81,6 +84,7 @@ public class Simulation {
             Animal animal = new Animal(position,genomLength,Gender.Male,energyStartLevel);
             animals.add(animal);
             map.place(animal);
+            familyStructure.addAnimal(animal,null);
         }
         for (int i =0; i< femaleNumber; i++){
             int x = random.nextInt(0,mapWidth);
@@ -89,6 +93,7 @@ public class Simulation {
             Animal animal = new Animal(position,genomLength,Gender.Female,energyStartLevel);
             animals.add(animal);
             map.place(animal);
+            familyStructure.addAnimal(animal,null);
         }
         map.mapChanged("Dodano początkowe zwierzęta");
     }
@@ -102,6 +107,12 @@ public class Simulation {
                 animalsToRemove.add(animal);
                 deadAnimals.add(animal);
                 flag = true;
+                if (animal.getGender() ==Gender.Male){
+                    maleNumber-=1;
+                }
+                else{
+                    femaleNumber -=1;
+                }
 
             }
         }
@@ -120,13 +131,15 @@ public class Simulation {
            animal.addAge();
            animal.nextGen();
        }
-       map.mapChanged("Zwierzęta poruszyły się");
+       if (!animals.isEmpty()) {
+           map.mapChanged("Zwierzęta poruszyły się");
+       }
         //zapewniona podstawowa funkcjonalność
         //throw new ExecutionControl.NotImplementedException("Niezaimplementowano moveAnimals");
     }
 
     private void animalsProcreation() throws ExecutionControl.NotImplementedException {
-        List<AnimalPair> animalsToBreed= map.procreate();
+        List<AnimalPair> animalsToBreed= map.procreate(energyBreadingThreshold);
         Random random = new Random();
         for (AnimalPair animalPair : animalsToBreed){
             Animal male = animalPair.male();
@@ -155,19 +168,33 @@ public class Simulation {
                 case 1 -> Gender.Female;
                 case null, default -> throw new IllegalStateException("Nieprawidłowy gen płci w nowym genotypie");
             };
-            Animal newAnimal = new Animal(position,newGenotype,newGender,maleEnergyLoss+femaleEnergyLoss-habsburgEnergyLossCalculation(animalPair));
+            int energyOfNewAnimal = (int) ((maleEnergyLoss + femaleEnergyLoss) * habsburgEnergyLossCalculation(animalPair));
+            Animal newAnimal = new Animal(position,newGenotype,newGender, energyOfNewAnimal);
             map.place(newAnimal);
             animals.add(newAnimal);
+            familyStructure.addAnimal(newAnimal,animalPair);
+
+            if (newGender == Gender.Male){
+                maleNumber+=1;
+            }
+            else{
+                femaleNumber +=1;
+            }
+        }
+        if (!animalsToBreed.isEmpty()){
+            map.mapChanged("W wyniku rozmnażania powstały nowe zwierzaki");
         }
     }
 
-    private int habsburgEnergyLossCalculation(AnimalPair animalPair){
-        IO.println("Niezaimplemenotawno straty energii Habsburgów");
-        return 0;
+    private double habsburgEnergyLossCalculation(AnimalPair animalPair){
+        Optional<Integer> relationshipLevel = familyStructure.relationshipLevel(animalPair);
+        return relationshipLevel.map(integer -> (1 - (1.0 / integer) * habsburgEnergyLoss)).orElse(1.0);
     }
 
     private int howManyPlants(int plants){
-        int maxPlants = mapWidth*mapHeight - currentPlants;
+        int maxPlants = (mapWidth+1)*(mapHeight+1) - currentPlants;
+        IO.print("map: %d\nsimulation: %d".formatted(map.getPlants().size(),currentPlants));
+        IO.println();
         return Math.min(plants, maxPlants);
 
     }

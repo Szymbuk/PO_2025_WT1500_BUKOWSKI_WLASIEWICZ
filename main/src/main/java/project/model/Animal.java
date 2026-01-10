@@ -1,6 +1,8 @@
 package project.model;
 
 
+import project.model.util.Node;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -14,6 +16,7 @@ public class Animal implements WorldElement{
     private final Gender gender;
     private int childrenNumber = 0;
     private int age = 0;
+    private Node familyStructureNode;
 
 
 
@@ -149,5 +152,13 @@ public class Animal implements WorldElement{
 
     public void dailyEnergyLoss(int energyLost){
         energy -= energyLost;
+    }
+
+    public void setFamilyStructureNode(Node node){
+        familyStructureNode = node;
+    }
+
+    public Node getFamilyStructureNode(){
+        return familyStructureNode;
     }
 }

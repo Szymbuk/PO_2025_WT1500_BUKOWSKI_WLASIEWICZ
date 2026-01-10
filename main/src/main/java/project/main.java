@@ -25,11 +25,11 @@ public class main {
 //                .setPlantDailyGrowth(10)
 //                .build();
         Simulation simulation2 = new Simulation.SimulationBuilder()
-                .setMap(10,10)
-                .setHabsburgParameters(2,2,0.6)
-                .setPlantParameters(10,5,15)
+                .setMap(3,3)
+                .setHabsburgParameters(2,2,0.9)
+                .setPlantParameters(2,2,20)
                 .setGenomSpecification(0,0,6)
-                .setEnergyDetails(100,50,50,0.1)
+                .setEnergyDetails(100,10,50,0.3)
                 .build();
         try {
             //simulation.run();

@@ -1,6 +1,7 @@
 package project.model;
 
 import project.model.util.MapVisualizer;
+import project.model.util.Node;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ public class WorldMap implements MoveValidator {
     private final Vector2d jungleEnd;
 
 
+
     public WorldMap(int width,int height,int id){
         this.id = id;
         this.height = height;
@@ -25,17 +27,17 @@ public class WorldMap implements MoveValidator {
         this.beginning= new Vector2d(0,0);
         this.end = new Vector2d(width,height);
 
-        double theoreticalJungleSize = width * 0.2;
+        double theoreticalJungleSize = (width+1) * 0.2;
         int jungleLength = Math.toIntExact(Math.round(theoreticalJungleSize));
-        if (!(jungleLength%2 == height%2)){
+        if (!(jungleLength%2 == (height+1)%2)){
             jungleLength = (int) theoreticalJungleSize;
-            if (!(jungleLength%2 == height%2)){
+            if (!(jungleLength%2 == (height+1)%2)){
                 jungleLength +=1;
             }
         }
-        int margin = (width-jungleLength)/2;
+        int margin = (width-jungleLength+1)/2;
         jungleBeginning = new Vector2d(0, margin);
-        jungleEnd = new Vector2d(width,margin + jungleLength);
+        jungleEnd = new Vector2d(end.x(), margin + jungleLength-1);
     }
 
 
@@ -86,12 +88,17 @@ public class WorldMap implements MoveValidator {
 
     public void move(Animal animal) {
         Vector2d previousPosition = animal.getPosition();
-        if (!(animals.containsKey(previousPosition) && animals.get(previousPosition).equals(animal))) {
+        if (!(animals.containsKey(previousPosition) && animals.get(previousPosition).contains(animal))) {
             return;
         }
         animal.move(this);
         Vector2d newPosition = animal.getPosition();
-        animals.get(animal.getPosition()).remove(animal); // z jakiegoś powodu próbuje usunąć zwierzę z miejsca w którym go nie było?
+        animals.get(previousPosition).remove(animal);
+
+        if (! animals.containsKey(newPosition)){
+            animals.put(newPosition,new ArrayList<>());
+        }
+
         animals.get(newPosition).add(animal);
 
         if (!previousPosition.equals(newPosition)) {
@@ -106,7 +113,6 @@ public class WorldMap implements MoveValidator {
     public void generatePlants(Integer numberOfPlants){
         Random random = new Random();
 
-        List<Vector2d> positionList = new ArrayList<>();
 
         int desert = 0;
         int jungle = 0;
@@ -115,10 +121,10 @@ public class WorldMap implements MoveValidator {
         while (numberOfPlants>0) {
             //pustynia
             if (random.nextDouble() < 0.2) {
-                if (placeDesert(positionList)) {
+                if (placeDesert()) {
                     numberOfPlants -= 1;
                     desert +=1;
-                } else if (placeJungle(positionList)) {
+                } else if (placeJungle()) {
                     numberOfPlants -= 1;
                     jungle +=1;
                 } else {
@@ -129,10 +135,10 @@ public class WorldMap implements MoveValidator {
 
             } else {
                 //dżungla
-                if (placeJungle(positionList)) {
+                if (placeJungle()) {
                     numberOfPlants -= 1;
                     jungle +=1;
-                } else if (placeDesert(positionList)) {
+                } else if (placeDesert()) {
                     numberOfPlants -= 1;
                     desert +=1;
                 } else {
@@ -143,54 +149,79 @@ public class WorldMap implements MoveValidator {
 
         }
         String message = "posadzono rośliny: %d w dzungli, %d na pustyni".formatted(jungle,desert);
-        for (Vector2d vector : positionList) {
-            Plant plant = new Plant(vector);
-            plants.put(vector, plant);
-        }
+
         mapChanged(message);
         //throw new ExecutionControl.NotImplementedException("Niezaimplementowano generatePlants");
     }
 
-    private boolean placeJungle(List<Vector2d> positionList){
+    private boolean placeJungle(){
         // Jeżeli jest miejsce to umieszcza roślinę w dżungli, w przeciwnym razie zwraca fałsz
         Random random = new Random();
         int stepCounter = 0;
         boolean flag = false;
-        while (stepCounter<width*height) {
-            int x = random.nextInt(jungleBeginning.x(), jungleEnd.x());
-            int y = random.nextInt(jungleBeginning.y(), jungleEnd.y());
+        while (stepCounter<(width+1)*(height+1) && stepCounter<100) {
+
+
+            int x;
+            int y;
+            if (jungleBeginning.x() == jungleEnd.x()){
+                x = jungleBeginning.x();
+            }
+            else{
+                x = random.nextInt(jungleBeginning.x(), jungleEnd.x());
+            }
+            if (jungleBeginning.y() == jungleEnd.y()){
+                y = jungleBeginning.y();
+            }
+            else{
+                y = random.nextInt(jungleBeginning.y(), jungleEnd.y());
+            }
+
+
             Vector2d vector = new Vector2d(x,y);
             if (!plants.containsKey(vector)){
                 flag =true;
-                positionList.add(vector);
+                plants.put(vector,new Plant(vector));
                 break;
             }
             stepCounter+=1;
         }
 
         int x = jungleBeginning.x();
-        while (!flag && x<= jungleEnd.x()){
-            int y = jungleBeginning.y();
-            while (y<= jungleEnd.y()){
+        while (!flag && x<= end.x()){
+            int y = beginning.y();
+            while (y< jungleBeginning.y()){
                 Vector2d vector = new Vector2d(x,y);
                 if (!plants.containsKey(vector)){
                     flag = true;
-                    positionList.add(vector);
+                    plants.put(vector,new Plant(vector));
                     break;
                 }
                 y+=1;
             }
+            y = jungleEnd.y()+1;
+            while (y<= end.y()){
+                Vector2d vector = new Vector2d(x,y);
+                if (!plants.containsKey(vector)){
+                    flag = true;
+                    plants.put(vector,new Plant(vector));
+                    break;
+                }
+                y+=1;
+            }
+
+
             x+=1;
         }
         return flag;
     }
 
-    private boolean placeDesert(List<Vector2d> positionList){
+    private boolean placeDesert(){
         // Jeżeli może to umieszcza roślinę na pustyni. Robi to losowo, chyba że przekroczono limit poszukiwań to przeszukuje każdy indeks mapy. Jeżeli się nie uda zwraca fałsz.
         Random random = new Random();
         int stepCounter = 0;
         boolean flag = false;
-        while (stepCounter<width*height) {
+        while (stepCounter<(width+1)*(height+1) && stepCounter<100) {
             Vector2d dessertBeginning;
             Vector2d dessertEnd;
             if (random.nextBoolean()){
@@ -201,11 +232,24 @@ public class WorldMap implements MoveValidator {
                 dessertBeginning = new Vector2d(beginning.x(), jungleEnd.y()+1);
                 dessertEnd = new Vector2d(end.x(), end.y()) ;
             }
-            int x = random.nextInt(dessertBeginning.x(), dessertEnd.x());
-            int y = random.nextInt(dessertBeginning.y(), dessertEnd.y());
+            int x;
+            int y;
+            if (dessertBeginning.x() == dessertEnd.x()){
+                x = dessertBeginning.x();
+            }
+            else{
+                x = random.nextInt(dessertBeginning.x(), dessertEnd.x());
+            }
+            if (dessertBeginning.y() == dessertEnd.y()){
+                y = dessertBeginning.y();
+            }
+            else{
+                y = random.nextInt(dessertBeginning.y(), dessertEnd.y());
+            }
+
             Vector2d vector = new Vector2d(x,y);
             if (!plants.containsKey(vector)){
-                positionList.add(vector);
+                plants.put(vector,new Plant(vector));
                 flag = true;
                 break;
             }
@@ -219,7 +263,7 @@ public class WorldMap implements MoveValidator {
                 Vector2d vector = new Vector2d(x,y);
                 if (!plants.containsKey(vector)){
                     flag =true;
-                    positionList.add(vector);
+                    plants.put(vector,new Plant(vector));
                 }
                 y+=1;
             }
@@ -244,17 +288,27 @@ public class WorldMap implements MoveValidator {
             plantsConsumed +=1;
             plantsPositionsToDelete.add(position);
         }
+        //IO.println("plantsConsumed: %d\nplantPositionsToDeleteSize: %d".formatted(plantsConsumed,plantsPositionsToDelete.size()));
+
         for (Vector2d position : plantsPositionsToDelete){
             plants.remove(position);
+        }
+        if (plantsConsumed > 0) {
+            mapChanged("Zjedzono %d roslin".formatted(plantsConsumed));
         }
         return plantsConsumed;
     }
     
-    public List<AnimalPair> procreate(){
+    public List<AnimalPair> procreate(int energyBreadingThreshold){
         List<AnimalPair> pairList = new ArrayList<>();
         for (Vector2d position : animals.keySet()){
             List<Animal> animalsToBreed = animals.get(position);
-            animalsToBreed.sort(Comparator.comparing(Animal::getEnergy).thenComparing(Animal::getAge).thenComparing(Animal::getChildrenNumber));
+            animalsToBreed.stream()
+                    .filter(animal -> animal.getEnergy()>= energyBreadingThreshold)
+                    .collect(Collectors.toList())
+                    .sort(Comparator.comparing(Animal::getEnergy)
+                            .thenComparing(Animal::getAge)
+                            .thenComparing(Animal::getChildrenNumber));
 
             Animal strongestMale = null;
             Animal strongestFemale = null;
@@ -336,6 +390,10 @@ public class WorldMap implements MoveValidator {
             }
         }
         return plants.getOrDefault(position,null);
+    }
+
+    public HashMap<Vector2d,Plant> getPlants(){
+        return plants;
     }
 }
 
