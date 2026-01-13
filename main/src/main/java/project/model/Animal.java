@@ -19,7 +19,6 @@ public class Animal implements WorldElement{
     private Node familyStructureNode;
 
 
-
     public Animal(Vector2d position,int genNumber, Gender gender, int energy){
         //używany do tworzenia początkowych zwierząt (nieznany genotyp)
         this(position,gender,energy);
@@ -161,4 +160,6 @@ public class Animal implements WorldElement{
     public Node getFamilyStructureNode(){
         return familyStructureNode;
     }
+
+    public List<Integer> getGenotype() { return genotype; }
 }

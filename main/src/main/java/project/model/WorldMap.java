@@ -17,10 +17,10 @@ public class WorldMap implements MoveValidator {
     private final Vector2d end;
     private final Vector2d jungleBeginning;
     private final Vector2d jungleEnd;
-
-
+    private final HashMap<List<Integer>, Integer> genotypeCountMap = new HashMap<>();
 
     public WorldMap(int width,int height,int id){
+
         this.id = id;
         this.height = height;
         this.width = width;
@@ -42,6 +42,7 @@ public class WorldMap implements MoveValidator {
 
 
     public void place(Animal animal){
+
         Vector2d position = animal.getPosition();
         if (!position.precedes(end) || !position.follows(beginning)){
             //chcemy wyłapać ewentualne błędne działanie programu
@@ -52,6 +53,9 @@ public class WorldMap implements MoveValidator {
                     animals.put(position,new ArrayList<>());
                 }
                 animals.get(animal.getPosition()).add(animal);
+
+                //zwieksz liczne wystepowan genotypu
+                genotypeCountMap.put(animal.getGenotype(), genotypeCountMap.getOrDefault(animal.getGenotype(), 0) + 1);
             }
 
     }
@@ -333,6 +337,8 @@ public class WorldMap implements MoveValidator {
 
     public void removeAnimal(Animal animal){
         animals.get(animal.getPosition()).remove(animal);
+        genotypeCountMap.put(animal.getGenotype(), genotypeCountMap.getOrDefault(animal.getGenotype(), 0) - 1);
+        assert genotypeCountMap.get(animal.getGenotype()) >= 0;
     }
 
 
@@ -341,7 +347,7 @@ public class WorldMap implements MoveValidator {
     }
 
 
-    public HashMap<Vector2d, List<WorldElement>> getElements() {
+    public int getEmptyFieldsCount() {
         HashMap<Vector2d,List<WorldElement>> elements = new HashMap<>();
         for (Vector2d position: animals.keySet()){
             elements.put(position, new ArrayList<>(animals.get(position)));
@@ -353,7 +359,7 @@ public class WorldMap implements MoveValidator {
             }
             elements.get(position).add(plants.get(position));
         }
-        return elements;
+        return width * height - elements.size();
     }
 
 
@@ -394,6 +400,24 @@ public class WorldMap implements MoveValidator {
 
     public HashMap<Vector2d,Plant> getPlants(){
         return plants;
+    }
+
+    public List<Map.Entry<List<Integer>, Integer>> getMostPopularGenotypes(int n) {
+        List<Map.Entry<List<Integer>, Integer>> list = new ArrayList<>(genotypeCountMap.entrySet());
+        list.sort((Comparator<? super Map.Entry<List<Integer>, Integer>>) Map.Entry.comparingByValue().reversed());
+        return list.subList(0, n);
+    }
+
+    public int getAverageEnergy() {
+        int sum = 0;
+        int n = 0;
+        for (Map.Entry<Vector2d, List<Animal>> entry: animals.entrySet()) {
+            for (Animal animal : entry.getValue()) {
+                sum += animal.getEnergy();
+                n += 1;
+            }
+        }
+        return sum/n;
     }
 }
 
