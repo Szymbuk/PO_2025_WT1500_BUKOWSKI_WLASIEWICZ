@@ -25,19 +25,22 @@ public class WorldMap implements MoveValidator {
         this.height = height;
         this.width = width;
         this.beginning= new Vector2d(0,0);
-        this.end = new Vector2d(width,height);
+        this.end = new Vector2d(width-1,height-1);
 
-        double theoreticalJungleSize = (width+1) * 0.2;
+        double theoreticalJungleSize = (width) * 0.2;
         int jungleLength = Math.toIntExact(Math.round(theoreticalJungleSize));
-        if (!(jungleLength%2 == (height+1)%2)){
+        if (!(jungleLength%2 == (height)%2)){
             jungleLength = (int) theoreticalJungleSize;
-            if (!(jungleLength%2 == (height+1)%2)){
+            if (!(jungleLength%2 == (height)%2)){
                 jungleLength +=1;
             }
         }
-        int margin = (width-jungleLength+1)/2;
+        int margin = (height-jungleLength)/2;
         jungleBeginning = new Vector2d(0, margin);
         jungleEnd = new Vector2d(end.x(), margin + jungleLength-1);
+        IO.println(jungleBeginning);
+        IO.println(jungleEnd);
+        IO.println(jungleLength);
     }
 
 
@@ -69,7 +72,7 @@ public class WorldMap implements MoveValidator {
     public Vector2d correctPosition(Vector2d oldPosition,Vector2d newPositon,Animal animal) {
         if (newPositon.y() <beginning.y() || newPositon.y() > end.y()){
             animal.turnAround();
-            return oldPosition;
+            return animal.getOrientation().toUnitVector().add(oldPosition);
         }
 
         int x;
@@ -86,7 +89,7 @@ public class WorldMap implements MoveValidator {
 
 
     public Boundary getCurrentBounds() {
-        return new Boundary(new Vector2d(0,0),new Vector2d(width,height));
+        return new Boundary(new Vector2d(0,0),new Vector2d(width-1,height-1));
     }
 
 
@@ -115,6 +118,7 @@ public class WorldMap implements MoveValidator {
     }
 
     public void generatePlants(Integer numberOfPlants){
+        IO.println("na początku zlecono %d roslin do posadzenia".formatted(numberOfPlants));
         Random random = new Random();
 
 
@@ -132,6 +136,7 @@ public class WorldMap implements MoveValidator {
                     numberOfPlants -= 1;
                     jungle +=1;
                 } else {
+                    IO.println("zostalo do posadzenia %d roslin".formatted(numberOfPlants));
                     throw new IllegalStateException("Podano złą liczbę roślin do posadzenia");
                 }
 
@@ -146,6 +151,7 @@ public class WorldMap implements MoveValidator {
                     numberOfPlants -= 1;
                     desert +=1;
                 } else {
+                    IO.println("zostalo do posadzenia %d roslin".formatted(numberOfPlants));
                     throw new IllegalStateException("Podano złą liczbę roślin do posadzenia");
                 }
             }
@@ -163,7 +169,7 @@ public class WorldMap implements MoveValidator {
         Random random = new Random();
         int stepCounter = 0;
         boolean flag = false;
-        while (stepCounter<(width+1)*(height+1) && stepCounter<100) {
+        while (stepCounter<(width)*(height) && stepCounter<100) {
 
 
             int x;
@@ -172,13 +178,14 @@ public class WorldMap implements MoveValidator {
                 x = jungleBeginning.x();
             }
             else{
-                x = random.nextInt(jungleBeginning.x(), jungleEnd.x());
+                //random działa na przedziale lewostronnie domkniętym stąd +1
+                x = random.nextInt(jungleBeginning.x(), jungleEnd.x()+1);
             }
             if (jungleBeginning.y() == jungleEnd.y()){
                 y = jungleBeginning.y();
             }
             else{
-                y = random.nextInt(jungleBeginning.y(), jungleEnd.y());
+                y = random.nextInt(jungleBeginning.y(), jungleEnd.y()+1);
             }
 
 
@@ -192,9 +199,9 @@ public class WorldMap implements MoveValidator {
         }
 
         int x = jungleBeginning.x();
-        while (!flag && x<= end.x()){
+        while (!flag && x<= jungleEnd.x()){
             int y = beginning.y();
-            while (y< jungleBeginning.y()){
+            while (y<= jungleEnd.y()){
                 Vector2d vector = new Vector2d(x,y);
                 if (!plants.containsKey(vector)){
                     flag = true;
@@ -203,18 +210,6 @@ public class WorldMap implements MoveValidator {
                 }
                 y+=1;
             }
-            y = jungleEnd.y()+1;
-            while (y<= end.y()){
-                Vector2d vector = new Vector2d(x,y);
-                if (!plants.containsKey(vector)){
-                    flag = true;
-                    plants.put(vector,new Plant(vector));
-                    break;
-                }
-                y+=1;
-            }
-
-
             x+=1;
         }
         return flag;
@@ -225,7 +220,7 @@ public class WorldMap implements MoveValidator {
         Random random = new Random();
         int stepCounter = 0;
         boolean flag = false;
-        while (stepCounter<(width+1)*(height+1) && stepCounter<100) {
+        while (stepCounter<(width)*(height) && stepCounter<100) {
             Vector2d dessertBeginning;
             Vector2d dessertEnd;
             if (random.nextBoolean()){
@@ -242,13 +237,13 @@ public class WorldMap implements MoveValidator {
                 x = dessertBeginning.x();
             }
             else{
-                x = random.nextInt(dessertBeginning.x(), dessertEnd.x());
+                x = random.nextInt(dessertBeginning.x(), dessertEnd.x()+1);
             }
             if (dessertBeginning.y() == dessertEnd.y()){
                 y = dessertBeginning.y();
             }
             else{
-                y = random.nextInt(dessertBeginning.y(), dessertEnd.y());
+                y = random.nextInt(dessertBeginning.y(), dessertEnd.y()+1);
             }
 
             Vector2d vector = new Vector2d(x,y);
@@ -261,9 +256,9 @@ public class WorldMap implements MoveValidator {
         }
 
         int x = beginning.x();
-        while (!flag && x<= jungleEnd.x()){
-            int y = jungleBeginning.y();
-            while (y<= jungleEnd.y()){
+        while (!flag && x<= end.x()){
+            int y = beginning.y();
+            while (y<jungleBeginning.y()){
                 Vector2d vector = new Vector2d(x,y);
                 if (!plants.containsKey(vector)){
                     flag =true;
@@ -271,6 +266,17 @@ public class WorldMap implements MoveValidator {
                 }
                 y+=1;
             }
+            y = jungleEnd.y()+1;
+            while (y<= end.y()){
+                Vector2d vector = new Vector2d(x,y);
+                if (!plants.containsKey(vector)){
+                    flag = true;
+                    plants.put(vector,new Plant(vector));
+                    break;
+                }
+                y+=1;
+            }
+
             x+=1;
         }
         return flag;
