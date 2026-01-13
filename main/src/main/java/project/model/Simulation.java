@@ -32,8 +32,8 @@ public class Simulation {
     private final FamilyStructure familyStructure = new FamilyStructure();
 
     private Simulation(SimulationBuilder builder){
-        this.mapHeight = builder.mapHeight -1;
-        this.mapWidth = builder.mapWidth -1;
+        this.mapHeight = builder.mapHeight;
+        this.mapWidth = builder.mapWidth;
         this.maleNumber = builder.maleNumber;
         this.femaleNumber = builder.femaleNumber;
         this.habsburgEnergyLoss = builder.habsburgEnergyLoss;
@@ -58,7 +58,7 @@ public class Simulation {
         map.generatePlants(numberOfPlants);
         currentPlants += numberOfPlants;
 
-        for (int i=0; i<10; i++){
+        for (int i=0; i<100; i++){
             deleteDeathAnimals();
             moveAnimals();
             currentPlants -= map.consumePlants(plantEnergyGain);
@@ -192,11 +192,10 @@ public class Simulation {
     }
 
     private int howManyPlants(int plants){
-        int maxPlants = (mapWidth+1)*(mapHeight+1) - currentPlants;
+        int maxPlants = (mapWidth)*(mapHeight) - currentPlants;
         IO.print("map: %d\nsimulation: %d".formatted(map.getPlants().size(),currentPlants));
         IO.println();
         return Math.min(plants, maxPlants);
-
     }
 
     private void animalsDailyEnergyLoss(){

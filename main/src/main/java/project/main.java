@@ -25,7 +25,7 @@ public class main {
 //                .setPlantDailyGrowth(10)
 //                .build();
         Simulation simulation2 = new Simulation.SimulationBuilder()
-                .setMap(3,3)
+                .setMap(6,6)
                 .setHabsburgParameters(2,2,0.9)
                 .setPlantParameters(2,2,20)
                 .setGenomSpecification(0,0,6)
