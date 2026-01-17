@@ -2,6 +2,10 @@ package project;
 
 import jdk.jshell.spi.ExecutionControl;
 import project.model.Simulation;
+import project.model.util.StatsToFile;
+
+import java.io.IOException;
+import java.util.Arrays;
 
 public class main {
     static void main(){
@@ -25,11 +29,11 @@ public class main {
 //                .setPlantDailyGrowth(10)
 //                .build();
         Simulation simulation2 = new Simulation.SimulationBuilder()
-                .setMap(6,6)
-                .setHabsburgParameters(2,2,0.9)
-                .setPlantParameters(2,2,20)
+                .setMap(10,10)
+                .setHabsburgParameters(10,10,0.2)
+                .setPlantParameters(10,15,20)
                 .setGenomSpecification(0,0,6)
-                .setEnergyDetails(100,10,50,0.3)
+                .setEnergyDetails(100,13,40,0.4)
                 .build();
         try {
             //simulation.run();
@@ -38,7 +42,6 @@ public class main {
         catch (ExecutionControl.NotImplementedException e){
             e.printStackTrace();
         }
-
 
 
     }

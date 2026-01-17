@@ -105,16 +105,7 @@ public class WorldMap implements MoveValidator {
         if (! animals.containsKey(newPosition)){
             animals.put(newPosition,new ArrayList<>());
         }
-
         animals.get(newPosition).add(animal);
-
-        if (!previousPosition.equals(newPosition)) {
-            //String message = "Zwierze poruszylo sie na pozycję %s".formatted(newPosition);
-            //mapChanged(message);
-        } else{
-            //String message = "Zwierze odbilo sie, jego aktualny zwrot to %s".formatted(animal.getOrientation());
-            //mapChanged(message);
-        }
     }
 
     public void generatePlants(Integer numberOfPlants){
@@ -139,9 +130,6 @@ public class WorldMap implements MoveValidator {
                     IO.println("zostalo do posadzenia %d roslin".formatted(numberOfPlants));
                     throw new IllegalStateException("Podano złą liczbę roślin do posadzenia");
                 }
-
-
-
             } else {
                 //dżungla
                 if (placeJungle()) {
@@ -410,7 +398,9 @@ public class WorldMap implements MoveValidator {
 
     public List<Map.Entry<List<Integer>, Integer>> getMostPopularGenotypes(int n) {
         List<Map.Entry<List<Integer>, Integer>> list = new ArrayList<>(genotypeCountMap.entrySet());
-        list.sort((Comparator<? super Map.Entry<List<Integer>, Integer>>) Map.Entry.comparingByValue().reversed());
+        // to rzucało błąd, dlatego podmieniłem
+        // list.sort((Comparator<? super Map.Entry<List<Integer>, Integer>>) Map.Entry.comparingByValue().reversed());
+        list.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
         return list.subList(0, n);
     }
 

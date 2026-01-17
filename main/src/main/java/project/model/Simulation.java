@@ -2,11 +2,10 @@ package project.model;
 
 import jdk.jshell.spi.ExecutionControl;
 import project.model.util.FamilyStructure;
+import project.model.util.StatsToFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.io.IOException;
+import java.util.*;
 
 public class Simulation {
     private final int mapHeight;
@@ -30,6 +29,7 @@ public class Simulation {
     private final List<Animal> deadAnimals = new ArrayList<>();
     private int currentPlants = 0;
     private final FamilyStructure familyStructure = new FamilyStructure();
+    private int day = 1;
 
     private Simulation(SimulationBuilder builder){
         this.mapHeight = builder.mapHeight;
@@ -57,8 +57,7 @@ public class Simulation {
         int numberOfPlants = howManyPlants(plantStartingQuantity);
         map.generatePlants(numberOfPlants);
         currentPlants += numberOfPlants;
-
-        for (int i=0; i<100; i++){
+        while (day<=1000){
             deleteDeathAnimals();
             moveAnimals();
             currentPlants -= map.consumePlants(plantEnergyGain);
@@ -69,8 +68,14 @@ public class Simulation {
             currentPlants += numberOfPlants;
 
             animalsDailyEnergyLoss();
+            try{
+                saveToFile("test");
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
 
-
+            day+=1;
         }
 
     }
@@ -203,6 +208,52 @@ public class Simulation {
             animal.dailyEnergyLoss(energyDailLoss);
         }
     }
+
+    private void saveToFile(String path) throws IOException {
+        StatsToFile.saveToFile(this,path);
+    }
+
+    public int getMaleNumber(){
+        return maleNumber;
+    }
+
+    public int getFemaleNumber(){
+        return femaleNumber;
+    }
+
+    public int getCurrentPlants(){
+        return currentPlants;
+    }
+
+    public List<Integer> getMostPopularGenotype(){
+        return map.getMostPopularGenotypes(1).getFirst().getKey();
+    }
+
+    public int getMostPopularGenotypeOccurrenceNumber(){
+        return map.getMostPopularGenotypes(1).getFirst().getValue();
+    }
+
+    public int getFreeSpace(){
+        return map.getEmptyFieldsCount();
+    }
+
+    public int getAverageEnergy(){
+        return map.getAverageEnergy();
+    }
+
+    public int getAverageDeadLifeLength(){
+        return deadAnimals.stream().map(Animal::getAge).mapToInt(i -> i).sum();
+    }
+
+    public OptionalDouble getAverageChildNumber(){
+        return animals.stream().map(Animal::getChildrenNumber).mapToInt(i->i).average();
+    }
+
+    public int getDay(){
+        return day;
+    }
+
+
 
 
 
