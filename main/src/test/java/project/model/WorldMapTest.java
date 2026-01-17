@@ -154,7 +154,37 @@ class WorldMapTest {
     void procreate() {
     }
 
-    @Test
-    void isOccupied() {
+    @Nested
+    class isOccupiedTest {
+        @Test
+        void falseOnEmptyField(){
+            assertFalse(map.isOccupied(new Vector2d(0,0)));
+        }
+
+
+        @Test
+        void trueWhenAnimal(){
+            Vector2d v = new Vector2d(0,0);
+            Animal animal = new Animal(v,8,Gender.Male,50);
+            map.place(animal);
+            assertTrue(map.isOccupied(new Vector2d(0,0)));
+        }
+
+        @Test
+        void trueWhenPlant(){
+            map.generatePlants(width*height);
+            assertTrue(map.isOccupied(new Vector2d(0,0)));
+        }
+
+        @Test
+        void trueWhenPlantAndAnimal(){
+            map.generatePlants(width*height);
+            Vector2d v = new Vector2d(0,0);
+            Animal animal = new Animal(v,8,Gender.Male,50);
+            map.place(animal);
+            assertTrue(map.isOccupied(new Vector2d(0,0)));
+
+        }
+
     }
 }

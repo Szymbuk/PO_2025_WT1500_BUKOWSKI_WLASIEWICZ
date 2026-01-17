@@ -26,7 +26,7 @@ public class FamilyStructure {
             Animal currentAnimal = queue.pop();
             Integer currentDistance = distance.get(currentAnimal);
 
-            if (currentDistance >4){
+            if (currentDistance >8){
                 return Optional.empty();
             }
 

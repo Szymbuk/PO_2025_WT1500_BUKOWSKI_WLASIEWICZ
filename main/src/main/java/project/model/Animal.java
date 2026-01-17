@@ -160,4 +160,6 @@ public class Animal implements WorldElement{
     }
 
     public List<Integer> getGenotype() { return genotype; }
+
+    public int getCurrentGeneIndex(){ return currentGeneIndex;}
 }

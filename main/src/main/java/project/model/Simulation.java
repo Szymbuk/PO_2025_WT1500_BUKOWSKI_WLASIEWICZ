@@ -142,49 +142,52 @@ public class Simulation {
 
     private void animalsProcreation(){
         List<AnimalPair> animalsToBreed= map.procreate(energyBreadingThreshold);
-        Random random = new Random();
+//        Random random = new Random();
         for (AnimalPair animalPair : animalsToBreed){
-            Animal male = animalPair.male();
-            Animal female = animalPair.female();
-            int totalEnergy = male.getEnergy() + female.getEnergy();
-            double malePart = (double) male.getEnergy() /totalEnergy;
-            int maleGens = (int) (genomLength*malePart);
-            int femaleGens = genomLength-maleGens;
-            List<Integer> newGenotype = new ArrayList<>();
-            int maleEnergyLoss = (int) (male.getEnergy()*energyBreadingLoss);
-            int femaleEnergyLoss = (int) (female.getEnergy()*energyBreadingLoss);
+            //Przeniesiono logikę z simulation do animalPair
 
-            if (random.nextBoolean()){
-                newGenotype.addAll(male.breed(true,maleGens,maleEnergyLoss));
-                newGenotype.addAll(female.breed(false,femaleGens,femaleEnergyLoss));
-            }
-            else{
-                newGenotype.addAll(female.breed(true,femaleGens,femaleEnergyLoss));
-                newGenotype.addAll(male.breed(false,maleGens,maleEnergyLoss));
-            }
-            int numberOfMutations = random.nextInt(minMutation,maxMutation+1);
-            for (int i = 0; i<numberOfMutations; i+=1){
-                // losujemy który z genów zmieniamy (poza genem płci)
-                int randomIndex = random.nextInt(0,genomLength-1);
-                // losujemy na jaki gen zmieniamy
-                newGenotype.set(randomIndex,random.nextInt(0,8));
-            }
-            int x = random.nextInt(0,mapWidth);
-            int y = random.nextInt(0,mapHeight);
-            Vector2d position = new Vector2d(x,y);
-
-            Gender newGender = switch(newGenotype.getLast()){
-                case 0 -> Gender.Male;
-                case 1 -> Gender.Female;
-                case null, default -> throw new IllegalStateException("Nieprawidłowy gen płci w nowym genotypie");
-            };
-            int energyOfNewAnimal = (int) ((maleEnergyLoss + femaleEnergyLoss) * habsburgEnergyLossCalculation(animalPair));
-            Animal newAnimal = new Animal(position,newGenotype,newGender, energyOfNewAnimal);
+//            Animal male = animalPair.male();
+//            Animal female = animalPair.female();
+//            int totalEnergy = male.getEnergy() + female.getEnergy();
+//            double malePart = (double) male.getEnergy() /totalEnergy;
+//            int maleGens = (int) (genomLength*malePart);
+//            int femaleGens = genomLength-maleGens;
+//            List<Integer> newGenotype = new ArrayList<>();
+//            int maleEnergyLoss = (int) (male.getEnergy()*energyBreadingLoss);
+//            int femaleEnergyLoss = (int) (female.getEnergy()*energyBreadingLoss);
+//
+//            if (random.nextBoolean()){
+//                newGenotype.addAll(male.breed(true,maleGens,maleEnergyLoss));
+//                newGenotype.addAll(female.breed(false,femaleGens,femaleEnergyLoss));
+//            }
+//            else{
+//                newGenotype.addAll(female.breed(true,femaleGens,femaleEnergyLoss));
+//                newGenotype.addAll(male.breed(false,maleGens,maleEnergyLoss));
+//            }
+//            int numberOfMutations = random.nextInt(minMutation,maxMutation+1);
+//            for (int i = 0; i<numberOfMutations; i+=1){
+//                // losujemy który z genów zmieniamy (poza genem płci)
+//                int randomIndex = random.nextInt(0,genomLength-1);
+//                // losujemy na jaki gen zmieniamy
+//                newGenotype.set(randomIndex,random.nextInt(0,8));
+//            }
+//            int x = random.nextInt(0,mapWidth);
+//            int y = random.nextInt(0,mapHeight);
+//            Vector2d position = new Vector2d(x,y);
+//
+//            Gender newGender = switch(newGenotype.getLast()){
+//                case 0 -> Gender.Male;
+//                case 1 -> Gender.Female;
+//                case null, default -> throw new IllegalStateException("Nieprawidłowy gen płci w nowym genotypie");
+//            };
+//            int energyOfNewAnimal = (int) ((maleEnergyLoss + femaleEnergyLoss) * habsburgEnergyLossCalculation(animalPair));
+//            Animal newAnimal = new Animal(position,newGenotype,newGender, energyOfNewAnimal);
+            Animal newAnimal = animalPair.breed(genomLength,energyBreadingLoss,minMutation,maxMutation,mapWidth,mapHeight,familyStructure,habsburgEnergyLoss);
             map.place(newAnimal);
             animals.add(newAnimal);
             familyStructure.addAnimal(newAnimal,animalPair);
 
-            if (newGender == Gender.Male){
+            if (newAnimal.getGender() == Gender.Male){
                 maleNumber+=1;
             }
             else{
@@ -196,10 +199,10 @@ public class Simulation {
         }
     }
 
-    private double habsburgEnergyLossCalculation(AnimalPair animalPair){
-        Optional<Integer> relationshipLevel = familyStructure.relationshipLevel(animalPair);
-        return relationshipLevel.map(integer -> (1 - (1.0 / integer) * habsburgEnergyLoss)).orElse(1.0);
-    }
+//    private double habsburgEnergyLossCalculation(AnimalPair animalPair){
+//        Optional<Integer> relationshipLevel = familyStructure.relationshipLevel(animalPair);
+//        return relationshipLevel.map(integer -> (1 - (1.0 / integer) * habsburgEnergyLoss)).orElse(1.0);
+//    }
 
     private int howManyPlants(int plants){
         int maxPlants = (mapWidth)*(mapHeight) - currentPlants;
