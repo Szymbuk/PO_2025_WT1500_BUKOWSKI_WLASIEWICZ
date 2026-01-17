@@ -1,8 +1,7 @@
 package project.model;
 
-import jdk.jshell.spi.ExecutionControl;
 import project.model.util.FamilyStructure;
-import project.model.util.StatsToFile;
+import project.model.util.FileManager;
 
 import java.io.IOException;
 import java.util.*;
@@ -10,8 +9,8 @@ import java.util.*;
 public class Simulation {
     private final int mapHeight;
     private final int mapWidth;
-    private int maleNumber;
-    private int femaleNumber;
+    private int startMaleNumber;
+    private int startFemaleNumber;
     private final double habsburgEnergyLoss;
     private final int plantStartingQuantity;
     private final int plantEnergyGain;
@@ -30,12 +29,14 @@ public class Simulation {
     private int currentPlants = 0;
     private final FamilyStructure familyStructure = new FamilyStructure();
     private int day = 1;
+    private int maleNumber;
+    private int femaleNumber;
 
     private Simulation(SimulationBuilder builder){
         this.mapHeight = builder.mapHeight;
         this.mapWidth = builder.mapWidth;
-        this.maleNumber = builder.maleNumber;
-        this.femaleNumber = builder.femaleNumber;
+        this.startMaleNumber = builder.startMaleNumber;
+        this.startFemaleNumber = builder.startFemaleNumber;
         this.habsburgEnergyLoss = builder.habsburgEnergyLoss;
         this.plantStartingQuantity = builder.plantStartingQuantity;
         this.plantEnergyGain = builder.plantEnergyGain;
@@ -47,6 +48,9 @@ public class Simulation {
         this.minMutation = builder.minMutation;
         this.maxMutation = builder.maxMutation;
         this.genomLength = builder.genomLength;
+        this.maleNumber = startMaleNumber;
+        this.femaleNumber = startFemaleNumber;
+
         map = new WorldMap(mapWidth,mapHeight,1);
 
 
@@ -77,7 +81,6 @@ public class Simulation {
             }
             day+=1;
         }
-        IO.println(map.getPlants().keySet());
     }
 
     private void createAnimals(){
@@ -210,7 +213,7 @@ public class Simulation {
     }
 
     private void saveToFile(String path) throws IOException {
-        StatsToFile.saveToFile(this,path);
+        FileManager.saveSimulationDataToCSV(this,path);
     }
 
     public int getMaleNumber(){
@@ -258,8 +261,8 @@ public class Simulation {
     public static class SimulationBuilder {
         private Integer mapHeight;
         private Integer mapWidth;
-        private Integer maleNumber;
-        private Integer femaleNumber;
+        private Integer startMaleNumber;
+        private Integer startFemaleNumber;
         private Double habsburgEnergyLoss;
         private Integer plantStartingQuantity;
         private Integer plantEnergyGain;
@@ -330,8 +333,8 @@ public class Simulation {
             return this;
         }
 
-        public SimulationBuilder setFemaleNumber(Integer femaleNumber) {
-            this.femaleNumber = femaleNumber;
+        public SimulationBuilder setStartFemaleNumber(Integer startFemaleNumber) {
+            this.startFemaleNumber = startFemaleNumber;
             return this;
         }
 
@@ -345,8 +348,8 @@ public class Simulation {
             return this;
         }
 
-        public SimulationBuilder setMaleNumber(Integer maleNumber) {
-            this.maleNumber = maleNumber;
+        public SimulationBuilder setStartMaleNumber(Integer startMaleNumber) {
+            this.startMaleNumber = startMaleNumber;
             return this;
         }
 
@@ -357,8 +360,8 @@ public class Simulation {
         }
 
         public SimulationBuilder setHabsburgParameters(Integer maleNumber,Integer femaleNumber, Double habsburgEnergyLoss){
-            this.maleNumber = maleNumber;
-            this.femaleNumber = femaleNumber;
+            this.startMaleNumber = maleNumber;
+            this.startFemaleNumber = femaleNumber;
             this.habsburgEnergyLoss = habsburgEnergyLoss;
             return this;
         }
@@ -393,10 +396,10 @@ public class Simulation {
             if (mapWidth==null){
                 throw new IllegalStateException("mapWidth is null");
             }
-            if (maleNumber==null){
-                throw new IllegalStateException("maleNumber is null");
+            if (startMaleNumber ==null){
+                throw new IllegalStateException("startMaleNumber is null");
             }
-            if (femaleNumber==null){
+            if (startFemaleNumber ==null){
                 throw new IllegalStateException("femaleNumber is null");
             }
             if (habsburgEnergyLoss ==null){
