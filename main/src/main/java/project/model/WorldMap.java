@@ -26,7 +26,7 @@ public class WorldMap implements MoveValidator {
         this.beginning= new Vector2d(0,0);
         this.end = new Vector2d(width-1,height-1);
 
-        double theoreticalJungleSize = (width) * 0.2;
+        double theoreticalJungleSize = (height) * 0.2;
         int jungleLength = Math.toIntExact(Math.round(theoreticalJungleSize));
         if (!(jungleLength%2 == (height)%2)){
             jungleLength = (int) theoreticalJungleSize;

@@ -106,7 +106,7 @@ public class Animal implements WorldElement{
 
     public void nextGen(){
         //aktywuje kolejny gen (pomija ostatni gen odpowiedzialny za płeć)
-        currentGeneIndex = (currentGeneIndex +1)%(genotype.size()-2);
+        currentGeneIndex = (currentGeneIndex +1)%(genotype.size()-1);
         Integer gene = genotype.get(currentGeneIndex);
         orientation = orientation.rotate(gene);
     }
