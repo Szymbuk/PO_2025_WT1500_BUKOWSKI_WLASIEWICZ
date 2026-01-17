@@ -24,7 +24,8 @@ public class Animal implements WorldElement{
         this(position,gender,energy);
         Random rand = new Random();
 
-        for (int i =0; i<genNumber; i++){
+        //gen number oznacza liczbę genów wraz z genem płci
+        for (int i =0; i<genNumber-1; i++){
             genotype.add(rand.nextInt(7));
         }
         currentGeneIndex = rand.nextInt(0,genotype.size()-1); // przed dodaniem genu płci
@@ -55,12 +56,9 @@ public class Animal implements WorldElement{
         this.position = position;
         this.gender = gender;
         this.energy = energy;
-
         Random rand = new Random();
         this.orientation = MapDirection.NORTH.rotate(rand.nextInt(0,7));
     }
-
-
 
     @Override
     public String toString(){

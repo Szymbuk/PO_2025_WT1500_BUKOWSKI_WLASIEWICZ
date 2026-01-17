@@ -30,18 +30,16 @@ public class main {
 //                .build();
         Simulation simulation2 = new Simulation.SimulationBuilder()
                 .setMap(10,10)
-                .setHabsburgParameters(10,10,0.2)
-                .setPlantParameters(10,15,20)
-                .setGenomSpecification(0,0,6)
-                .setEnergyDetails(100,13,40,0.4)
+                .setHabsburgParameters(20,20,0.2)
+                .setPlantParameters(10,5,100)
+                .setGenomSpecification(0,0,7)
+                .setEnergyDetails(900,10,110,0.4)
                 .build();
-        try {
-            //simulation.run();
-            simulation2.run();
-        }
-        catch (ExecutionControl.NotImplementedException e){
-            e.printStackTrace();
-        }
+
+        //simulation.run();
+        simulation2.run();
+
+
 
 
     }

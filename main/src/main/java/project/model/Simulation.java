@@ -51,13 +51,14 @@ public class Simulation {
 
 
     }
-    public void run() throws ExecutionControl.NotImplementedException {
+    public void run(){
         map.addListener(new ConsoleMapDisplay());
         createAnimals();
         int numberOfPlants = howManyPlants(plantStartingQuantity);
         map.generatePlants(numberOfPlants);
         currentPlants += numberOfPlants;
-        while (day<=1000){
+        while (day<=100){
+            IO.println(map.getEmptyFieldsCount());
             deleteDeathAnimals();
             moveAnimals();
             currentPlants -= map.consumePlants(plantEnergyGain);
@@ -74,10 +75,9 @@ public class Simulation {
             catch (IOException e){
                 e.printStackTrace();
             }
-
             day+=1;
         }
-
+        IO.println(map.getPlants().keySet());
     }
 
     private void createAnimals(){
@@ -103,7 +103,7 @@ public class Simulation {
         map.mapChanged("Dodano początkowe zwierzęta");
     }
 
-    private void deleteDeathAnimals() throws ExecutionControl.NotImplementedException {
+    private void deleteDeathAnimals(){
         boolean flag = false;
         List<Animal> animalsToRemove = new ArrayList<>();
         for (Animal animal : animals){
@@ -118,19 +118,15 @@ public class Simulation {
                 else{
                     femaleNumber -=1;
                 }
-
             }
         }
         for (Animal animal : animalsToRemove){
             animals.remove(animal);
         }
         if (flag){map.mapChanged("Usunięto martwe zwierzęta");}
-
-        //zapewniona podstawowa funkcjonalność
-        //throw new ExecutionControl.NotImplementedException("Niezaimplementowano deleteDeathAnimals");
     }
 
-    private void moveAnimals() throws ExecutionControl.NotImplementedException {
+    private void moveAnimals(){
        for (Animal animal : animals){
            map.move(animal);
            animal.addAge();
@@ -139,11 +135,9 @@ public class Simulation {
        if (!animals.isEmpty()) {
            map.mapChanged("Zwierzęta poruszyły się");
        }
-        //zapewniona podstawowa funkcjonalność
-        //throw new ExecutionControl.NotImplementedException("Niezaimplementowano moveAnimals");
     }
 
-    private void animalsProcreation() throws ExecutionControl.NotImplementedException {
+    private void animalsProcreation(){
         List<AnimalPair> animalsToBreed= map.procreate(energyBreadingThreshold);
         Random random = new Random();
         for (AnimalPair animalPair : animalsToBreed){
@@ -165,9 +159,17 @@ public class Simulation {
                 newGenotype.addAll(female.breed(true,femaleGens,femaleEnergyLoss));
                 newGenotype.addAll(male.breed(false,maleGens,maleEnergyLoss));
             }
+            int numberOfMutations = random.nextInt(minMutation,maxMutation+1);
+            for (int i = 0; i<numberOfMutations; i+=1){
+                // losujemy który z genów zmieniamy (poza genem płci)
+                int randomIndex = random.nextInt(0,genomLength-1);
+                // losujemy na jaki gen zmieniamy
+                newGenotype.set(randomIndex,random.nextInt(0,8));
+            }
             int x = random.nextInt(0,mapWidth);
             int y = random.nextInt(0,mapHeight);
             Vector2d position = new Vector2d(x,y);
+
             Gender newGender = switch(newGenotype.getLast()){
                 case 0 -> Gender.Male;
                 case 1 -> Gender.Female;
@@ -198,8 +200,6 @@ public class Simulation {
 
     private int howManyPlants(int plants){
         int maxPlants = (mapWidth)*(mapHeight) - currentPlants;
-        IO.print("map: %d\nsimulation: %d".formatted(map.getPlants().size(),currentPlants));
-        IO.println();
         return Math.min(plants, maxPlants);
     }
 
@@ -252,15 +252,6 @@ public class Simulation {
     public int getDay(){
         return day;
     }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -441,7 +432,6 @@ public class Simulation {
             if (genomLength==null){
                 throw new IllegalStateException("genomLength is null");
             }
-
 
             return new Simulation(this);
         }

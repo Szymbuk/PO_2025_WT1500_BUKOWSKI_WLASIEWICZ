@@ -1,7 +1,6 @@
 package project.model;
 
 import project.model.util.MapVisualizer;
-import project.model.util.Node;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,17 +37,12 @@ public class WorldMap implements MoveValidator {
         int margin = (height-jungleLength)/2;
         jungleBeginning = new Vector2d(0, margin);
         jungleEnd = new Vector2d(end.x(), margin + jungleLength-1);
-        IO.println(jungleBeginning);
-        IO.println(jungleEnd);
-        IO.println(jungleLength);
     }
 
 
     public void place(Animal animal){
-
         Vector2d position = animal.getPosition();
         if (!position.precedes(end) || !position.follows(beginning)){
-            //chcemy wyłapać ewentualne błędne działanie programu
             throw new IncorrectPositionException(position);
         }
         else{
@@ -56,11 +50,9 @@ public class WorldMap implements MoveValidator {
                     animals.put(position,new ArrayList<>());
                 }
                 animals.get(animal.getPosition()).add(animal);
-
-                //zwieksz liczne wystepowan genotypu
+                //zwieksz licznik wystepowan genotypu
                 genotypeCountMap.put(animal.getGenotype(), genotypeCountMap.getOrDefault(animal.getGenotype(), 0) + 1);
             }
-
     }
 
     @Override
@@ -74,7 +66,6 @@ public class WorldMap implements MoveValidator {
             animal.turnAround();
             return animal.getOrientation().toUnitVector().add(oldPosition);
         }
-
         int x;
         if (newPositon.x() < beginning.x()){
             x = end.x();
@@ -101,22 +92,120 @@ public class WorldMap implements MoveValidator {
         animal.move(this);
         Vector2d newPosition = animal.getPosition();
         animals.get(previousPosition).remove(animal);
-
+        if (animals.get(previousPosition).isEmpty()){
+            animals.remove(previousPosition);
+        }
         if (! animals.containsKey(newPosition)){
             animals.put(newPosition,new ArrayList<>());
         }
         animals.get(newPosition).add(animal);
     }
 
+    public int consumePlants(int energyGain){
+        List<Vector2d> plantsPositionsToDelete = new ArrayList<>();
+        int plantsConsumed = 0;
+        for (Vector2d position:  plants.keySet()){
+            List<Animal> hungryAnimals = animals.getOrDefault(position,null);
+            if (hungryAnimals == null || hungryAnimals.isEmpty()){
+                continue;
+            }
+            hungryAnimals.sort(Comparator.comparing(Animal::getEnergy).thenComparing(Animal::getAge).thenComparing(Animal::getChildrenNumber));
+            Animal winner = hungryAnimals.getLast();
+            winner.eat(energyGain);
+            plantsConsumed +=1;
+            plantsPositionsToDelete.add(position);
+        }
+        for (Vector2d position : plantsPositionsToDelete){
+            plants.remove(position);
+        }
+        if (plantsConsumed > 0) {
+            mapChanged("Zjedzono %d roslin".formatted(plantsConsumed));
+        }
+        return plantsConsumed;
+    }
+    
+    public List<AnimalPair> procreate(int energyBreadingThreshold){
+        // Funkcja zwraca pary zwierząt, które będą się ze sobą rozmnażać
+        List<AnimalPair> pairList = new ArrayList<>();
+        for (Vector2d position : animals.keySet()){
+            List<Animal> animalsToBreed = animals.get(position);
+            animalsToBreed.stream()
+                    .filter(animal -> animal.getEnergy()>= energyBreadingThreshold)
+                    .collect(Collectors.toList())
+                    .sort(Comparator.comparing(Animal::getEnergy)
+                            .thenComparing(Animal::getAge)
+                            .thenComparing(Animal::getChildrenNumber));
+
+            Animal strongestMale = null;
+            Animal strongestFemale = null;
+            int i = animalsToBreed.size()-1;
+            while ((strongestFemale == null || strongestMale ==null) && i>0){
+                if (animalsToBreed.get(i).getGender().equals(Gender.Male) && strongestMale==null){
+                    strongestMale = animalsToBreed.get(i);
+                }
+                else if(animalsToBreed.get(i).getGender().equals(Gender.Female) && strongestFemale==null){
+                    strongestFemale = animalsToBreed.get(i);
+                }
+                i-=1;
+            }
+            if (strongestFemale == null || strongestMale == null){
+                continue;
+            }
+            pairList.add(new AnimalPair(strongestMale,strongestFemale));
+        }
+        return pairList;
+    }
+
+
+    public void removeAnimal(Animal animal){
+        animals.get(animal.getPosition()).remove(animal);
+        if (animals.get(animal.getPosition()).isEmpty()){
+            animals.remove(animal.getPosition());
+        }
+        genotypeCountMap.put(animal.getGenotype(), genotypeCountMap.getOrDefault(animal.getGenotype(), 0) - 1);
+        assert genotypeCountMap.get(animal.getGenotype()) >= 0;
+    }
+
+
+    public boolean isOccupied(Vector2d position) {
+        return (animals.containsKey(position)||plants.containsKey(position));
+    }
+
+    public WorldElement objectAt(Vector2d position) {
+        if (animals.containsKey(position)) {
+            if (!animals.get(position).isEmpty())
+            {
+                List<Animal> strongestAnimals = animals.get(position);
+                strongestAnimals.sort(Comparator.comparing(Animal::getEnergy).thenComparing(Animal::getAge).thenComparing(Animal::getChildrenNumber));
+                return strongestAnimals.getLast();
+            }
+        }
+        return plants.getOrDefault(position,null);
+    }
+
+    public int getEmptyFieldsCount() {
+//        HashMap<Vector2d,List<WorldElement>> elements = new HashMap<>();
+//        for (Vector2d position: animals.keySet()){
+//            elements.put(position, new ArrayList<>(animals.get(position)));
+//            }
+//
+//        for (Vector2d position: plants.keySet()){
+//            if (!elements.containsKey(position)) {
+//                elements.put(position, new ArrayList<>());
+//            }
+//            elements.get(position).add(plants.get(position));
+//        }
+        HashSet<Vector2d> elements = new HashSet<>(animals.keySet());
+        elements.addAll(plants.keySet());
+        return width * height - elements.size();
+    }
+
     public void generatePlants(Integer numberOfPlants){
-        IO.println("na początku zlecono %d roslin do posadzenia".formatted(numberOfPlants));
         Random random = new Random();
-
-
         int desert = 0;
         int jungle = 0;
         // Mapa musi dostać taką liczbę roślin, jaką będzie mogła wygenerować,
-        // Należy zabezpieczyć się w Simulation
+        // Zabezpieczenie jest w Simulation
         while (numberOfPlants>0) {
             //pustynia
             if (random.nextDouble() < 0.2) {
@@ -127,7 +216,7 @@ public class WorldMap implements MoveValidator {
                     numberOfPlants -= 1;
                     jungle +=1;
                 } else {
-                    IO.println("zostalo do posadzenia %d roslin".formatted(numberOfPlants));
+                    System.err.println("zostalo do posadzenia %d roslin".formatted(numberOfPlants));
                     throw new IllegalStateException("Podano złą liczbę roślin do posadzenia");
                 }
             } else {
@@ -139,7 +228,7 @@ public class WorldMap implements MoveValidator {
                     numberOfPlants -= 1;
                     desert +=1;
                 } else {
-                    IO.println("zostalo do posadzenia %d roslin".formatted(numberOfPlants));
+                    System.err.println("zostalo do posadzenia %d roslin".formatted(numberOfPlants));
                     throw new IllegalStateException("Podano złą liczbę roślin do posadzenia");
                 }
             }
@@ -147,9 +236,7 @@ public class WorldMap implements MoveValidator {
 
         }
         String message = "posadzono rośliny: %d w dzungli, %d na pustyni".formatted(jungle,desert);
-
         mapChanged(message);
-        //throw new ExecutionControl.NotImplementedException("Niezaimplementowano generatePlants");
     }
 
     private boolean placeJungle(){
@@ -204,7 +291,7 @@ public class WorldMap implements MoveValidator {
     }
 
     private boolean placeDesert(){
-        // Jeżeli może to umieszcza roślinę na pustyni. Robi to losowo, chyba że przekroczono limit poszukiwań to przeszukuje każdy indeks mapy. Jeżeli się nie uda zwraca fałsz.
+        // Jeżeli może to umieszcza roślinę na pustyni. Robi to losowo, chyba że przekroczono limit poszukiwań to przeszukuje każdy indeks mapy. Jeżeli się nie uda-zwraca fałsz.
         Random random = new Random();
         int stepCounter = 0;
         boolean flag = false;
@@ -251,109 +338,22 @@ public class WorldMap implements MoveValidator {
                 if (!plants.containsKey(vector)){
                     flag =true;
                     plants.put(vector,new Plant(vector));
-                }
-                y+=1;
-            }
-            y = jungleEnd.y()+1;
-            while (y<= end.y()){
-                Vector2d vector = new Vector2d(x,y);
-                if (!plants.containsKey(vector)){
-                    flag = true;
-                    plants.put(vector,new Plant(vector));
                     break;
                 }
                 y+=1;
             }
-
+            y = jungleEnd.y()+1;
+            while (!flag && y<= end.y()){
+                Vector2d vector = new Vector2d(x,y);
+                if (!plants.containsKey(vector)){
+                    flag = true;
+                    plants.put(vector,new Plant(vector));
+                }
+                y+=1;
+            }
             x+=1;
         }
         return flag;
-    }
-
-    public int consumePlants(int energyGain){
-        List<Vector2d> plantsPositionsToDelete = new ArrayList<>();
-        int plantsConsumed = 0;
-        for (Vector2d position:  plants.keySet()){
-            List<Animal> hungryAnimals = animals.getOrDefault(position,null);
-            if (hungryAnimals == null || hungryAnimals.isEmpty()){
-                continue;
-            }
-            hungryAnimals.sort(Comparator.comparing(Animal::getEnergy).thenComparing(Animal::getAge).thenComparing(Animal::getChildrenNumber));
-            //IO.println("first: %s".formatted(hungryAnimals.getFirst()));
-            //IO.println("last: %s".formatted(hungryAnimals.getLast()));
-            Animal winner = hungryAnimals.getLast();
-            winner.eat(energyGain);
-            plantsConsumed +=1;
-            plantsPositionsToDelete.add(position);
-        }
-        //IO.println("plantsConsumed: %d\nplantPositionsToDeleteSize: %d".formatted(plantsConsumed,plantsPositionsToDelete.size()));
-
-        for (Vector2d position : plantsPositionsToDelete){
-            plants.remove(position);
-        }
-        if (plantsConsumed > 0) {
-            mapChanged("Zjedzono %d roslin".formatted(plantsConsumed));
-        }
-        return plantsConsumed;
-    }
-    
-    public List<AnimalPair> procreate(int energyBreadingThreshold){
-        List<AnimalPair> pairList = new ArrayList<>();
-        for (Vector2d position : animals.keySet()){
-            List<Animal> animalsToBreed = animals.get(position);
-            animalsToBreed.stream()
-                    .filter(animal -> animal.getEnergy()>= energyBreadingThreshold)
-                    .collect(Collectors.toList())
-                    .sort(Comparator.comparing(Animal::getEnergy)
-                            .thenComparing(Animal::getAge)
-                            .thenComparing(Animal::getChildrenNumber));
-
-            Animal strongestMale = null;
-            Animal strongestFemale = null;
-            int i = animalsToBreed.size()-1;
-            while ((strongestFemale == null || strongestMale ==null) && i>0){
-                if (animalsToBreed.get(i).getGender().equals(Gender.Male) && strongestMale==null){
-                    strongestMale = animalsToBreed.get(i);
-                }
-                else if(animalsToBreed.get(i).getGender().equals(Gender.Female) && strongestFemale==null){
-                    strongestFemale = animalsToBreed.get(i);
-                }
-                i-=1;
-            }
-            if (strongestFemale == null || strongestMale == null){
-                continue;
-            }
-            pairList.add(new AnimalPair(strongestMale,strongestFemale));
-        }
-        return pairList;
-    }
-
-
-    public void removeAnimal(Animal animal){
-        animals.get(animal.getPosition()).remove(animal);
-        genotypeCountMap.put(animal.getGenotype(), genotypeCountMap.getOrDefault(animal.getGenotype(), 0) - 1);
-        assert genotypeCountMap.get(animal.getGenotype()) >= 0;
-    }
-
-
-    public boolean isOccupied(Vector2d position) {
-        return (animals.containsKey(position)||plants.containsKey(position));
-    }
-
-
-    public int getEmptyFieldsCount() {
-        HashMap<Vector2d,List<WorldElement>> elements = new HashMap<>();
-        for (Vector2d position: animals.keySet()){
-            elements.put(position, new ArrayList<>(animals.get(position)));
-            }
-
-        for (Vector2d position: plants.keySet()){
-            if (!elements.containsKey(position)) {
-                elements.put(position, new ArrayList<>());
-            }
-            elements.get(position).add(plants.get(position));
-        }
-        return width * height - elements.size();
     }
 
 
@@ -378,18 +378,6 @@ public class WorldMap implements MoveValidator {
     @Override
     public String toString() {
         return new MapVisualizer(this).draw(getCurrentBounds().lowerLeft(), getCurrentBounds().upperRight());
-    }
-
-    public WorldElement objectAt(Vector2d position) {
-        if (animals.containsKey(position)) {
-            if (!animals.get(position).isEmpty())
-            {
-                List<Animal> strongestAnimals = animals.get(position);
-                strongestAnimals.sort(Comparator.comparing(Animal::getEnergy).thenComparing(Animal::getAge).thenComparing(Animal::getChildrenNumber));
-                return strongestAnimals.getLast();
-            }
-        }
-        return plants.getOrDefault(position,null);
     }
 
     public HashMap<Vector2d,Plant> getPlants(){

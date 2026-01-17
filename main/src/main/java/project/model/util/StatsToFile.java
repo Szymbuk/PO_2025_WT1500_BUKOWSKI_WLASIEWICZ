@@ -22,22 +22,23 @@ public class StatsToFile {
                 writer.write(header);
                 writer.newLine();
             }
-            String dayString = "%d\t".formatted(simulation.getDay());
-            String maleString = "%d\t".formatted(simulation.getMaleNumber());
-            String femaleString = "%d\t".formatted(simulation.getFemaleNumber());
-            String plantString = "%d\t".formatted(simulation.getCurrentPlants());
-            String emptyFieldsString = "%d\t".formatted(simulation.getFreeSpace());
+            String dayString = "%d".formatted(simulation.getDay());
+            String maleString = "%d".formatted(simulation.getMaleNumber());
+            String femaleString = "%d".formatted(simulation.getFemaleNumber());
+            String plantString = "%d".formatted(simulation.getCurrentPlants());
+            String emptyFieldsString = "%d".formatted(simulation.getFreeSpace());
             String genotypeString = "%s ".formatted(simulation.getMostPopularGenotype())
                     .replace("[","")
                     .replace("]","")
                     .replace(",","-")
                     .replace(" ","")
                     + " ";
-            String numberOfOccurenceString = "%d\t".formatted(simulation.getMostPopularGenotypeOccurrenceNumber());
-            String energyLevelString = "%d\t".formatted(simulation.getAverageEnergy());
-            String lifeLengthString = "%d\t".formatted(simulation.getAverageDeadLifeLength());
-            String childNumberString = "%f\t".formatted(simulation.getAverageChildNumber().orElse(0.0));
-            writer.write(dayString+maleString+femaleString+plantString+emptyFieldsString+genotypeString+numberOfOccurenceString+energyLevelString+lifeLengthString+childNumberString);
+            String numberOfOccurenceString = "%d".formatted(simulation.getMostPopularGenotypeOccurrenceNumber());
+            String energyLevelString = "%d".formatted(simulation.getAverageEnergy());
+            String lifeLengthString = "%d".formatted(simulation.getAverageDeadLifeLength());
+            String childNumberString = "%f".formatted(simulation.getAverageChildNumber().orElse(0.0));
+            String record = String.join("\t",dayString,maleString,femaleString,plantString,emptyFieldsString,genotypeString,numberOfOccurenceString,energyLevelString,lifeLengthString,childNumberString);
+            writer.write(record);
             writer.newLine();
         }
     }
