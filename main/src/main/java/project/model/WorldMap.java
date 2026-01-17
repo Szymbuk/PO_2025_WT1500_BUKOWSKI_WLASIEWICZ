@@ -384,12 +384,22 @@ public class WorldMap implements MoveValidator {
         return plants;
     }
 
+<<<<<<< HEAD
     public List<Map.Entry<List<Integer>, Integer>> getMostPopularGenotypes(int n) {
         List<Map.Entry<List<Integer>, Integer>> list = new ArrayList<>(genotypeCountMap.entrySet());
         // to rzucało błąd, dlatego podmieniłem
         // list.sort((Comparator<? super Map.Entry<List<Integer>, Integer>>) Map.Entry.comparingByValue().reversed());
         list.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
         return list.subList(0, n);
+=======
+    public List<List<Integer>> getMostPopularGenotypes(int n) {
+        return genotypeCountMap.entrySet()
+                .stream()
+                .sorted((e1, e2) -> Integer.compare(e2.getValue(), e1.getValue()))
+                .limit(n)
+                .map(Map.Entry::getKey)
+                .toList();
+>>>>>>> 4a09ab4 (Dodano początki plików ui)
     }
 
     public int getAverageEnergy() {
