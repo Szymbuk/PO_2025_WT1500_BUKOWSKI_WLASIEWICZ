@@ -20,7 +20,10 @@ public class SimulationWindow {
             SimulationWindowPresenter presenter = loader.getController();
             presenter.setSimulation(simulation);
             presenter.setDayDurationMillis(dayDurationMillis);
+            simulation.getMap().addListener(presenter);
             window.setScene(new Scene(viewRoot));
+            Thread sim_thread = new Thread(simulation);
+            sim_thread.start();
         } catch (Exception e) {
             e.printStackTrace();
             return;

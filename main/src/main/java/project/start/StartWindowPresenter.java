@@ -123,6 +123,8 @@ public class StartWindowPresenter {
                         reproductionEnergySpinner.getValue(), 
                         reproductionCostSpinner.getValue()
                 )
+                .setDayDurationMillis(dayDurationSpinner.getValue())
+                .setCsvSave(csvSaveCheckBox.isSelected())
                 .build();
     }
 

@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="">
+<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="project.sim_window.SimulationWindowPresenter">
 
     <!-- Lewa sekcja: Statystyki + Wykresy -->
     <left>
@@ -12,7 +12,7 @@
             <Label style="-fx-font-size: 20px; -fx-font-weight: bold;" text="Statystyki Mapy" />
             <Label fx:id="animalCountLabel" text="Zwierzęta: 0" />
             <Label fx:id="grassCountLabel" text="Rośliny: 0" />
-            <Label fx:id="freeFieldsLabel" text="Wolne pola: all"/>
+            <Label fx:id="freeFieldsLabel" text="Wolne pola: "/>
             <Label fx:id="mostPopularGenotypeLabel" text="Genom:" />
             <Label fx:id="avgEnergyLabel" text="Średnia energia: 0" />
             <Label fx:id="avgLifespanLabel" text="Średnia długość życia: 0" />
@@ -33,7 +33,7 @@
             <HBox alignment="CENTER" spacing="10">
                 <Button fx:id="pauseButton" onAction="#pauseSimulation" text="Pauza" />
                 <Button fx:id="resumeButton" onAction="#resumeSimulation" text="Wznów" disable="true" />
-                <Button fx:id="closeButton" onAction="#closeWindow" text="Zamknij" />
+                <Button fx:id="closeButton" onAction="#closeSimulation" text="Zamknij" />
             </HBox>
 
         </VBox>
@@ -58,9 +58,9 @@
             <Label fx:id="trackedDescendantsLabel" text="Potomkowie: -" />
             <Label fx:id="trackedAgeLabel" text="Wiek: -" />
             <Label fx:id="trackedDeathDayLabel" text="Dzień śmierci: -" />
-            <Button fx:id="stopTrackingButton" onAction="#stopTracking" text="Przestań śledzić zwierzę" />
-            <Button fx:id="highlightPreferredFieldsButton" onAction="#highlightPreferredFields" text="Podświetl preferowane pola" disable="true"/>
-            <Button fx:id="highlightDominantGenotypeButton" onAction="#highlightDominantGenotype" text="Podświetl dominujący genotyp" disable="true"/>
+            <Button fx:id="stopTrackingButton"  text="Przestań śledzić zwierzę" />
+            <Button fx:id="highlightPreferredFieldsButton" text="Podświetl preferowane pola" disable="true"/>
+            <Button fx:id="highlightDominantGenotypeButton" text="Podświetl dominujący genotyp" disable="true"/>
 
         </VBox>
 
