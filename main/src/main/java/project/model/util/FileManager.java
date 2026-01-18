@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class FileManager {
-    private static final             List<String> simulationParameters = List.of(
+    private static final List<String> simulationParameters = List.of(
             "mapHeight",
             "mapWidth",
             "startMaleNumber",

@@ -1,12 +1,16 @@
 package project.model;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.Random;
+
 import project.model.util.FamilyStructure;
 import project.model.util.FileManager;
 
-import java.io.IOException;
-import java.util.*;
-
-public class Simulation {
+public class Simulation implements Runnable {
     private final int mapHeight;
     private final int mapWidth;
     private int startMaleNumber;
@@ -22,6 +26,11 @@ public class Simulation {
     private final int minMutation;
     private final int maxMutation;
     private final int genomLength;
+
+    private final int dayDurationMillis;
+    private final boolean csvSave;
+    private boolean isRunning = true;
+    private boolean pauseSimulation = false;
 
     private final WorldMap map;
     private final List<Animal> animals = new ArrayList<>();
@@ -50,38 +59,58 @@ public class Simulation {
         this.genomLength = builder.genomLength;
         this.maleNumber = startMaleNumber;
         this.femaleNumber = startFemaleNumber;
+        this.dayDurationMillis = builder.dayDurationMillis;
+        this.csvSave = builder.csvSave;
 
         map = new WorldMap(mapWidth,mapHeight,1);
 
 
     }
     public void run(){
-        map.addListener(new ConsoleMapDisplay());
         createAnimals();
         int numberOfPlants = howManyPlants(plantStartingQuantity);
         map.generatePlants(numberOfPlants);
         currentPlants += numberOfPlants;
-        while (day<=100){
-            IO.println(map.getEmptyFieldsCount());
-            deleteDeathAnimals();
-            moveAnimals();
-            currentPlants -= map.consumePlants(plantEnergyGain);
-            animalsProcreation();
-
-            numberOfPlants = howManyPlants(plantDailyGrowth);
-            map.generatePlants(numberOfPlants);
-            currentPlants += numberOfPlants;
-
-            animalsDailyEnergyLoss();
-            try{
-                saveToFile("test");
+        while (isRunning){
+            try {
+                synchronized (this) {
+                    while (pauseSimulation){
+                        wait(1000);
+                    }
+                }
+                performDayCycle();
+                Thread.sleep(dayDurationMillis);
+            } catch (InterruptedException e) {
+                System.err.println("Symulacja przerwana.");
+                isRunning = false;
+                Thread.currentThread().interrupt();
             }
-            catch (IOException e){
-                e.printStackTrace();
-            }
-            day+=1;
         }
     }
+
+    private void performDayCycle(){
+        deleteDeathAnimals();
+        moveAnimals();
+        currentPlants -= map.consumePlants(plantEnergyGain);
+        animalsProcreation();
+
+        int numberOfPlants = howManyPlants(plantDailyGrowth);
+        map.generatePlants(numberOfPlants);
+        currentPlants += numberOfPlants;
+
+        animalsDailyEnergyLoss();
+        day+=1;
+    }
+    
+    public void closeSimulation() {
+        isRunning = false;
+    }
+
+    public synchronized void setPause(boolean pauseSimulation) {
+        this.pauseSimulation = pauseSimulation;
+    }
+
+    public WorldMap getMap() { return this.map; }
 
     private void createAnimals(){
         Random random = new Random();
@@ -199,10 +228,11 @@ public class Simulation {
         }
     }
 
-//    private double habsburgEnergyLossCalculation(AnimalPair animalPair){
-//        Optional<Integer> relationshipLevel = familyStructure.relationshipLevel(animalPair);
-//        return relationshipLevel.map(integer -> (1 - (1.0 / integer) * habsburgEnergyLoss)).orElse(1.0);
-//    }
+    private double habsburgEnergyLossCalculation(AnimalPair animalPair){
+        Optional<Integer> relationshipLevel = familyStructure.relationshipLevel(animalPair);
+        // TODO : to chyba powinno byc a * (1 - 1/x) a nie (1 - a/x)
+        return relationshipLevel.map(integer -> (1 - (1.0 / integer) * habsburgEnergyLoss)).orElse(1.0);
+    }
 
     private int howManyPlants(int plants){
         int maxPlants = (mapWidth)*(mapHeight) - currentPlants;
@@ -219,39 +249,39 @@ public class Simulation {
         FileManager.saveSimulationDataToCSV(this,path);
     }
 
-    public int getMaleNumber(){
+    public synchronized int getMaleNumber(){
         return maleNumber;
     }
 
-    public int getFemaleNumber(){
+    public synchronized int getFemaleNumber(){
         return femaleNumber;
     }
 
-    public int getCurrentPlants(){
+    public synchronized int getCurrentPlants(){
         return currentPlants;
     }
 
-    public List<Integer> getMostPopularGenotype(){
+    public synchronized List<Integer> getMostPopularGenotype(){
         return map.getMostPopularGenotypes(1).getFirst().getKey();
     }
 
-    public int getMostPopularGenotypeOccurrenceNumber(){
+    public synchronized int getMostPopularGenotypeOccurrenceNumber(){
         return map.getMostPopularGenotypes(1).getFirst().getValue();
     }
 
-    public int getFreeSpace(){
+    public synchronized int getFreeSpace(){
         return map.getEmptyFieldsCount();
     }
 
-    public int getAverageEnergy(){
+    public synchronized int getAverageEnergy(){
         return map.getAverageEnergy();
     }
 
-    public int getAverageDeadLifeLength(){
+    public synchronized int getAverageDeadLifeLength(){
         return deadAnimals.stream().map(Animal::getAge).mapToInt(i -> i).sum();
     }
 
-    public OptionalDouble getAverageChildNumber(){
+    public synchronized OptionalDouble getAverageChildNumber() {
         return animals.stream().map(Animal::getChildrenNumber).mapToInt(i->i).average();
     }
 
@@ -277,6 +307,8 @@ public class Simulation {
         private Integer genomLength;
         private Integer minMutation = 0;
         private Integer maxMutation;
+        private Integer dayDurationMillis;
+        private boolean csvSave;
 
 
 
@@ -353,6 +385,16 @@ public class Simulation {
 
         public SimulationBuilder setStartMaleNumber(Integer startMaleNumber) {
             this.startMaleNumber = startMaleNumber;
+            return this;
+        }
+        
+        public SimulationBuilder setDayDurationMillis(Integer dayDurationMillis){
+            this.dayDurationMillis = dayDurationMillis;
+            return this;
+        }
+
+        public SimulationBuilder setCsvSave(boolean csvSave){
+            this.csvSave = csvSave;
             return this;
         }
 
