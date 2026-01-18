@@ -1,24 +1,33 @@
 package project.sim_window;
 
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import project.model.Simulation;
 
 public class SimulationWindow {
-    private Stage stage;
+    private Stage window;
 
-    public SimulationWindow() {
-        stage = new Stage();
-        stage.setTitle("Secondary Window");
-
-        Label label = new Label("I am a separate window!");
-        StackPane root = new StackPane(label);
-
-        stage.setScene(new Scene(root, 250, 150));
+    public SimulationWindow(Simulation simulation, int dayDurationMillis) {
+        window = new Stage();
+        window.setTitle("Okno symulacji");
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getClassLoader().getResource("simulationwindow.fxml"));
+        try {
+            BorderPane viewRoot = loader.load();
+            loader.getController();
+            SimulationWindowPresenter presenter = loader.getController();
+            presenter.setSimulation(simulation);
+            presenter.setDayDurationMillis(dayDurationMillis);
+            window.setScene(new Scene(viewRoot));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
     }
 
     public void show() {
-        stage.show(); // NON-BLOCKING
+        window.show();
     }
 }

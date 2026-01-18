@@ -199,10 +199,11 @@ public class Simulation {
         }
     }
 
-//    private double habsburgEnergyLossCalculation(AnimalPair animalPair){
-//        Optional<Integer> relationshipLevel = familyStructure.relationshipLevel(animalPair);
-//        return relationshipLevel.map(integer -> (1 - (1.0 / integer) * habsburgEnergyLoss)).orElse(1.0);
-//    }
+    private double habsburgEnergyLossCalculation(AnimalPair animalPair){
+        Optional<Integer> relationshipLevel = familyStructure.relationshipLevel(animalPair);
+        // TODO : to chyba powinno byc a * (1 - 1/x) a nie (1 - a/x)
+        return relationshipLevel.map(integer -> (1 - (1.0 / integer) * habsburgEnergyLoss)).orElse(1.0);
+    }
 
     private int howManyPlants(int plants){
         int maxPlants = (mapWidth)*(mapHeight) - currentPlants;

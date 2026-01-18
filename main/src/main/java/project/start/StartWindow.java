@@ -7,7 +7,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
-public class StartWindow extends Application{
+public class StartWindow extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -27,8 +27,6 @@ public class StartWindow extends Application{
 
         primaryStage.setScene(scene);
 
-        primaryStage.setTitle("Start Window");
-        // primaryStage.minWidthProperty().bind(viewRoot.minWidthProperty());
-        // primaryStage.minHeightProperty().bind(viewRoot.minHeightProperty());
+        primaryStage.setTitle("Okno startowe");
     }
 }
