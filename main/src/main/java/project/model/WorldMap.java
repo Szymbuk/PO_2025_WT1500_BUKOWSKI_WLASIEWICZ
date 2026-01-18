@@ -61,21 +61,16 @@ public class WorldMap implements MoveValidator {
     }
 
     @Override
-    public Vector2d correctPosition(Vector2d oldPosition,Vector2d newPositon,Animal animal) {
-        if (newPositon.y() <beginning.y() || newPositon.y() > end.y()){
+    public Vector2d correctPosition(Vector2d oldPosition, Vector2d newPosition, Animal animal) {
+        if (newPosition.y() < beginning.y() || newPosition.y() > end.y()) {
             animal.turnAround();
-            return animal.getOrientation().toUnitVector().add(oldPosition);
+            return oldPosition.add(animal.getOrientation().toUnitVector());
         }
-        int x;
-        if (newPositon.x() < beginning.x()){
-            x = end.x();
-        } else if (newPositon.x() > end.x()) {
-            x = beginning.x();
-        }
-        else{
-            x = newPositon.x();
-        }
-        return new Vector2d(x,newPositon.y());
+        int x = newPosition.x();
+        if (newPosition.x() < beginning.x()) x = end.x();
+        else if (newPosition.x() > end.x()) x = beginning.x();
+
+        return new Vector2d(x, newPosition.y());
     }
 
 
@@ -128,18 +123,16 @@ public class WorldMap implements MoveValidator {
         // Funkcja zwraca pary zwierząt, które będą się ze sobą rozmnażać
         List<AnimalPair> pairList = new ArrayList<>();
         for (Vector2d position : animals.keySet()){
-            List<Animal> animalsToBreed = animals.get(position);
-            animalsToBreed.stream()
-                    .filter(animal -> animal.getEnergy()>= energyBreadingThreshold)
-                    .collect(Collectors.toList())
-                    .sort(Comparator.comparing(Animal::getEnergy)
+            List<Animal> animalsToBreed = animals.get(position).stream()
+                    .filter(animal -> animal.getEnergy() >= energyBreadingThreshold)
+                    .sorted(Comparator.comparing(Animal::getEnergy)
                             .thenComparing(Animal::getAge)
-                            .thenComparing(Animal::getChildrenNumber));
-
+                            .thenComparing(Animal::getChildrenNumber))
+                    .toList();
             Animal strongestMale = null;
             Animal strongestFemale = null;
             int i = animalsToBreed.size()-1;
-            while ((strongestFemale == null || strongestMale ==null) && i>0){
+            while ((strongestFemale == null || strongestMale ==null) && i>=0){
                 if (animalsToBreed.get(i).getGender().equals(Gender.Male) && strongestMale==null){
                     strongestMale = animalsToBreed.get(i);
                 }
