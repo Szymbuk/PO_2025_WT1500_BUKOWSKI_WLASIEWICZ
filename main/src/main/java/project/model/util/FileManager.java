@@ -100,13 +100,11 @@ public class FileManager {
         File  file = new File(filePath);
         Simulation.SimulationBuilder builder = new Simulation.SimulationBuilder();
         try (Scanner scanner = new Scanner(file)) {
-            // 1. Odczytujemy nagłówek (żeby wiedzieć co jest czym)
             if (!scanner.hasNextLine()) throw new IOException("Pusty plik!");
             String headerLine = scanner.nextLine();
             String[] headers = headerLine.split("\t");
 
-            // 2. Odczytujemy ostatnią linię danych (lub pierwszą, zależy jak chcesz)
-            // Tutaj logika: wczytujemy OSTATNIĄ zapisaną konfigurację
+            //Odczytujemy ostatnią linię danych
             String lastDataLine = null;
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
@@ -118,7 +116,6 @@ public class FileManager {
             if (lastDataLine == null) throw new IOException("Plik zawiera tylko nagłówek!");
             String[] values = lastDataLine.split("\t");
 
-            // 3. Magia Refleksji: Wypełniamy Buildera
             Class<?> builderClass = builder.getClass();
 
             for (int i = 0; i < headers.length; i++) {
@@ -126,15 +123,12 @@ public class FileManager {
                 String stringValue = values[i];
 
                 try {
-                    // Znajdź pole w Builderze o tej samej nazwie co w nagłówku
                     Field field = builderClass.getDeclaredField(fieldName);
                     field.setAccessible(true);
 
-                    // KONWERSJA TYPÓW (String -> int/double)
                     Class<?> fieldType = field.getType();
                     Object typedValue = convertToType(stringValue, fieldType);
 
-                    // Ustaw wartość w polu buildera
                     field.set(builder, typedValue);
 
                 } catch (NoSuchFieldException e) {
@@ -144,14 +138,12 @@ public class FileManager {
                 }
             }
         }
-    // Zwracamy gotowy obiekt
         return builder.build();
     }
 
 // Metoda pomocnicza do konwersji Stringa na typ pola
 private static Object convertToType(String value, Class<?> targetType) {
     if (targetType == int.class || targetType == Integer.class) {
-        // "Bezpieczne" parsowanie double->int (na wypadek zapisu "100.0")
         return (int) Double.parseDouble(value);
     } else if (targetType == double.class || targetType == Double.class) {
         return Double.parseDouble(value);
