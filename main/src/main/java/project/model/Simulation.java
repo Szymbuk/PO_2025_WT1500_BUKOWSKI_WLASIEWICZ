@@ -1,6 +1,8 @@
 package project.model;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -9,6 +11,7 @@ import java.util.Random;
 
 import project.model.util.FamilyStructure;
 import project.model.util.FileManager;
+import project.model.util.StatsToFile;
 
 public class Simulation implements Runnable {
     private final int mapHeight;
@@ -78,6 +81,9 @@ public class Simulation implements Runnable {
                         wait(1000);
                     }
                 }
+                if (csvSave) {
+                    saveDayToCsv();
+                }
                 performDayCycle();
                 Thread.sleep(dayDurationMillis);
             } catch (InterruptedException e) {
@@ -114,6 +120,14 @@ public class Simulation implements Runnable {
 
     public int getEnergyStartLevel() {
         return energyStartLevel;
+    }
+
+    private void saveDayToCsv() {
+        try {
+            StatsToFile.saveToFile(this, "daystats.csv");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void createAnimals(){

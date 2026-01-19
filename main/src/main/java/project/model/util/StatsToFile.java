@@ -32,7 +32,7 @@ public class StatsToFile {
                     .replace("]","")
                     .replace(",","-")
                     .replace(" ","")
-                    + " ";
+                    + "\t";
             String numberOfOccurenceString = "%d\t".formatted(simulation.getMostPopularGenotypeOccurrenceNumber());
             String energyLevelString = "%d\t".formatted(simulation.getAverageEnergy());
             String lifeLengthString = "%d\t".formatted(simulation.getAverageDeadLifeLength());
