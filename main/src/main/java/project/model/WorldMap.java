@@ -246,8 +246,7 @@ public class WorldMap implements MoveValidator {
         Random random = new Random();
         int stepCounter = 0;
         boolean flag = false;
-        // TODO : stepCounter powinien zależeć od rozmiaru mapy
-        while (stepCounter<(width)*(height) && stepCounter<100) {
+        while (stepCounter<(width)*(height) || stepCounter<100) {
 
 
             int x;
@@ -298,8 +297,7 @@ public class WorldMap implements MoveValidator {
         Random random = new Random();
         int stepCounter = 0;
         boolean flag = false;
-        // TODO : stepCounter powinien zależeć od rozmiaru mapy
-        while (stepCounter<(width)*(height) && stepCounter<100) {
+        while (stepCounter<(width)*(height) || stepCounter<100) {
             Vector2d dessertBeginning;
             Vector2d dessertEnd;
             if (random.nextBoolean()){
