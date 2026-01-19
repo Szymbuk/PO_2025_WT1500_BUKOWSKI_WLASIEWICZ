@@ -3,9 +3,12 @@ package project.model;
 
 import project.model.util.Node;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
+import java.util.Stack;
 
 public class Animal implements WorldElement{
     private MapDirection orientation;
@@ -15,6 +18,7 @@ public class Animal implements WorldElement{
     private int currentGeneIndex;
     private final Gender gender;
     private int childrenNumber = 0;
+    private int descendantsNumber = 0;
     private int age = 0;
     private Node familyStructureNode;
     private int dayOfDeath;
@@ -106,6 +110,14 @@ public class Animal implements WorldElement{
         return orientation;
     }
 
+    public void incDescendantsNumber() {
+        descendantsNumber++;
+    }
+
+    public int getDescendantsNumber() {
+        return descendantsNumber;
+    }
+
     public void turnAround(){
         orientation = orientation.rotate(4);
     }
@@ -120,12 +132,28 @@ public class Animal implements WorldElement{
     public List<Integer> breed(boolean leftside, int n,int energyLoss){
         energy -= energyLoss;
         childrenNumber +=1;
+        incrementDescendants();
 
         if (leftside){
             return genotype.subList(0,n);
         }
         else{
             return genotype.subList(genotype.size()-n,genotype.size());
+        }
+    }
+
+    public void incrementDescendants() {
+        incDescendantsNumber();
+        Stack<AnimalPair> queue = new Stack<>();
+        queue.add(familyStructureNode.parents);
+        while (!queue.isEmpty()) {
+            AnimalPair pair = queue.pop();
+            if (pair != null) {
+                pair.male().incDescendantsNumber();
+                pair.female().incDescendantsNumber();
+                queue.add(pair.male().familyStructureNode.parents);
+                queue.add(pair.female().familyStructureNode.parents);
+            }
         }
     }
 

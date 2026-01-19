@@ -57,8 +57,8 @@
             <Label fx:id="trackedAgeLabel" text="Wiek: -" />
             <Label fx:id="trackedDeathDayLabel" text="Dzień śmierci: -" />
             <Button fx:id="stopTrackingButton" onAction="#stopTracking" text="Przestań śledzić zwierzę" />
-            <Button fx:id="highlightPreferredFieldsButton" text="Podświetl preferowane pola" disable="true"/>
-            <Button fx:id="highlightDominantGenotypeButton" text="Podświetl dominujący genotyp" disable="true"/>
+            <Button fx:id="highlightPreferredFieldsButton" text="Podświetl preferowane pola"/>
+            <Button fx:id="highlightDominantGenotypeButton"  onAction="#switchHighlightGenotypeButton" text="Podświetl dominujący genotyp"/>
 
         </VBox>
 

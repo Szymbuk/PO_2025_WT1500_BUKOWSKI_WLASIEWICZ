@@ -8,7 +8,7 @@ import java.util.List;
 
 public class  Node{
     Animal item;
-    AnimalPair parents;
+    public AnimalPair parents;
     List<Animal> children = new ArrayList<>();
     Node(Animal animal, AnimalPair parents){
         this.item = animal;

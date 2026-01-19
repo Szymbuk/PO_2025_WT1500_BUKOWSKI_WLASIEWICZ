@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Random;
 
@@ -279,12 +278,6 @@ public class Simulation implements Runnable {
         if (!animalsToBreed.isEmpty()){
             map.mapChanged("W wyniku rozmnażania powstały nowe zwierzaki");
         }
-    }
-
-    private double habsburgEnergyLossCalculation(AnimalPair animalPair){
-        Optional<Integer> relationshipLevel = familyStructure.relationshipLevel(animalPair);
-        // TODO : to chyba powinno byc a * (1 - 1/x) a nie (1 - a/x)
-        return relationshipLevel.map(integer -> (1 - (1.0 / integer) * habsburgEnergyLoss)).orElse(1.0);
     }
 
     private int howManyPlants(int plants){

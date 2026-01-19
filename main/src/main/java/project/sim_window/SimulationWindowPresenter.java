@@ -10,6 +10,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -65,6 +66,8 @@ public class SimulationWindowPresenter implements MapChangeListener {
         "Średnia długość życia", 
         "Średnia liczba dzieci"
     };
+
+    private boolean highlightDominantGenotype = false;
 
     private Simulation simulation;
     private Animal trackedAnimal;
@@ -151,6 +154,14 @@ public class SimulationWindowPresenter implements MapChangeListener {
             glow.setRadius(10);
             animalRect.setEffect(glow);
         }
+        
+        if (highlightDominantGenotype && animal.getGenotype().equals(simulation.getMostPopularGenotype())) {
+            DropShadow yellowGlow = new DropShadow();
+            yellowGlow.setColor(Color.YELLOW);
+            yellowGlow.setRadius(15);
+            yellowGlow.setSpread(0.7);
+            animalRect.setEffect(yellowGlow);
+        }
 
         double energyPct = (double) animal.getEnergy() / simulation.getEnergyStartLevel();
         Rectangle energyBar = new Rectangle(cellSize * Math.min(1.0, energyPct), cellSize * 0.2);
@@ -207,8 +218,7 @@ public class SimulationWindowPresenter implements MapChangeListener {
         trackedEnergyLabel.setText("Energia: " + trackedAnimal.getEnergy());
         trackedAgeLabel.setText("Wiek: " + trackedAnimal.getAge());
         trackedChildrenLabel.setText("Dzieci: " + trackedAnimal.getChildrenNumber());
-        // TODO: Metoda w Animal zwracajaca ilosc potomkow
-        trackedDescendantsLabel.setText("Potomkowie: " + "TODO");
+        trackedDescendantsLabel.setText("Potomkowie: " + trackedAnimal.getDescendantsNumber());
         trackedActiveGeneLabel.setText("Indeks genu: " + trackedAnimal.getCurrentGeneIndex());
         trackedGrassEatenLabel.setText("Zjedzona trawa: " + trackedAnimal.getGrassEaten());
         
@@ -223,6 +233,11 @@ public class SimulationWindowPresenter implements MapChangeListener {
         mapGrid.getChildren().clear();
         mapGrid.getColumnConstraints().clear();
         mapGrid.getRowConstraints().clear();
+    }
+
+    public void switchHighlightGenotypeButton() {
+        highlightDominantGenotype = !highlightDominantGenotype;
+        drawMap(simulation.getMap()); 
     }
     
     public void setSimulation(Simulation simulation) {
