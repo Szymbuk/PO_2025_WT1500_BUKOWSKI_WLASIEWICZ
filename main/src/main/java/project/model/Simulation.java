@@ -88,7 +88,7 @@ public class Simulation implements Runnable {
         }
     }
 
-    private void performDayCycle(){
+    private synchronized void performDayCycle(){
         deleteDeathAnimals();
         moveAnimals();
         currentPlants -= map.consumePlants(plantEnergyGain);
@@ -111,6 +111,10 @@ public class Simulation implements Runnable {
     }
 
     public WorldMap getMap() { return this.map; }
+
+    public int getEnergyStartLevel() {
+        return energyStartLevel;
+    }
 
     private void createAnimals(){
         Random random = new Random();
@@ -138,22 +142,26 @@ public class Simulation implements Runnable {
     private void deleteDeathAnimals(){
         boolean flag = false;
         List<Animal> animalsToRemove = new ArrayList<>();
-        for (Animal animal : animals){
-            if (animal.getEnergy()<=0){
-                map.removeAnimal(animal);
-                animalsToRemove.add(animal);
-                deadAnimals.add(animal);
-                flag = true;
-                if (animal.getGender() ==Gender.Male){
-                    maleNumber-=1;
-                }
-                else{
-                    femaleNumber -=1;
+        synchronized (animals) {
+            for (Animal animal : animals){
+                if (animal.getEnergy()<=0){
+                    synchronized (map) {
+                        map.removeAnimal(animal);
+                    }
+                    animalsToRemove.add(animal);
+                    deadAnimals.add(animal);
+                    flag = true;
+                    if (animal.getGender() ==Gender.Male){
+                        maleNumber-=1;
+                    }
+                    else{
+                        femaleNumber -=1;
+                    }
                 }
             }
-        }
-        for (Animal animal : animalsToRemove){
-            animals.remove(animal);
+            for (Animal animal : animalsToRemove){
+                animals.remove(animal);
+            }
         }
         if (flag){map.mapChanged("Usunięto martwe zwierzęta");}
     }
@@ -169,7 +177,7 @@ public class Simulation implements Runnable {
        }
     }
 
-    private void animalsProcreation(){
+    private synchronized void animalsProcreation(){
         List<AnimalPair> animalsToBreed= map.procreate(energyBreadingThreshold);
 //        Random random = new Random();
         for (AnimalPair animalPair : animalsToBreed){
@@ -255,6 +263,54 @@ public class Simulation implements Runnable {
 
     public synchronized int getFemaleNumber(){
         return femaleNumber;
+    }
+
+    public int getPlantStartingQuantity() {
+        return plantStartingQuantity;
+    }
+
+    public int getPlantEnergyGain() {
+        return plantEnergyGain;
+    }
+
+    public int getPlantDailyGrowth() {
+        return plantDailyGrowth;
+    }
+
+    public double getHabsburgEnergyLoss() {
+        return habsburgEnergyLoss;
+    }
+
+    public int getEnergyDailLoss() {
+        return energyDailLoss;
+    }
+
+    public int getEnergyBreadingThreshold() {
+        return energyBreadingThreshold;
+    }
+
+    public double getEnergyBreadingLoss() {
+        return energyBreadingLoss;
+    }
+
+    public int getMinMutation() {
+        return minMutation;
+    }
+
+    public int getMaxMutation() {
+        return maxMutation;
+    }
+
+    public int getGenomLength() {
+        return genomLength;
+    }
+
+    public int getDayDurationMillis(){
+        return dayDurationMillis;
+    }
+
+    public boolean isCsvSaveEnabled(){
+        return csvSave;
     }
 
     public synchronized int getCurrentPlants(){

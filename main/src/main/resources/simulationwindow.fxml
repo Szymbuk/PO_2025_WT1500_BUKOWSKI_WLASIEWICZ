@@ -8,7 +8,7 @@
 
     <!-- Lewa sekcja: Statystyki + Wykresy -->
     <left>
-        <VBox alignment="CENTER" prefWidth="250" spacing="15">
+        <VBox alignment="CENTER" prefWidth="250" prefHeight="900" spacing="25" style="-fx-padding: 15;">
             <Label style="-fx-font-size: 20px; -fx-font-weight: bold;" text="Statystyki Mapy" />
             <Label fx:id="animalCountLabel" text="Zwierzęta: 0" />
             <Label fx:id="grassCountLabel" text="Rośliny: 0" />
@@ -41,8 +41,8 @@
 
     <!-- Centrum: Siatka mapy z ustawionym stałym rozmiarem -->
     <center>
-        <StackPane fx:id="gridContainer">
-            <GridPane fx:id="mapGrid" hgap="1" maxHeight="900" maxWidth="900" minHeight="500" minWidth="500" prefHeight="700" prefWidth="700" vgap="1" />
+        <StackPane fx:id="gridContainer" alignment="CENTER" BorderPane.alignment="CENTER">
+            <GridPane fx:id="mapGrid" alignment="CENTER" hgap="1" maxHeight="900" maxWidth="900" minHeight="500" minWidth="500" prefHeight="700" prefWidth="700" vgap="1" />
         </StackPane>
     </center>
 

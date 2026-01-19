@@ -1,18 +1,23 @@
 package project.sim_window;
 
-import project.model.Simulation;
-
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-import project.model.*;
+import project.model.Animal;
+import project.model.MapChangeListener;
+import project.model.Plant;
+import project.model.Simulation;
+import project.model.Vector2d;
+import project.model.WorldElement;
+import project.model.WorldMap;
 
 public class SimulationWindowPresenter implements MapChangeListener {
 
@@ -29,51 +34,76 @@ public class SimulationWindowPresenter implements MapChangeListener {
     @FXML private Button closeButton;
 
     private Simulation simulation;
-    private int dayDurationMillis;
 
     @Override
     public void mapChanged(WorldMap worldMap, String message) {
         Platform.runLater(() -> {
-            drawMap(worldMap);
-            updateStatistics();
+                drawMap(worldMap);
+                updateStatistics();
         });
     }
 
     private void drawMap(WorldMap map) {
         clearGrid();
-        int mapWidth = map.getWidth();
-        int mapHeight = map.getHeight();
+        
+        double displaySize = 700.0; 
+        double cellSize = displaySize / Math.max(map.getWidth(), map.getHeight());
 
-        double cellSize = Math.min(700.0 / mapWidth, 700.0 / mapHeight);
-
-        for (int x = 0; x < mapWidth; x++) {
-            for (int y = 0; y < mapHeight; y++) {
+        for (int x = 0; x < map.getWidth(); x++) {
+            for (int y = 0; y < map.getHeight(); y++) {
                 Vector2d position = new Vector2d(x, y);
                 WorldElement element = map.objectAt(position);
 
-                Rectangle rect = new Rectangle(cellSize, cellSize);
-                
-                if (element instanceof Animal) {
-                    rect.setFill(Color.BROWN); 
-                } else if (element instanceof Plant) {
-                    rect.setFill(Color.GREEN);
-                } else {
-                    rect.setFill(Color.LIGHTGRAY); 
-                }
+                if (element instanceof Animal animal) {
+                    VBox container = new VBox(0);
+                    container.setAlignment(Pos.CENTER);
+                    container.setMinSize(cellSize, cellSize);
+                    container.setMaxSize(cellSize, cellSize);
 
-                mapGrid.add(rect, x, y);
+                    Rectangle animalRect = new Rectangle(cellSize, cellSize * 0.8); 
+                    animalRect.setFill(Color.BROWN);
+
+                    ProgressBar energyBar = new ProgressBar();
+                    
+                    double energyPct = (double) animal.getEnergy() / simulation.getEnergyStartLevel();
+                    energyBar.setProgress(0.5);
+                    
+                    energyBar.setPrefWidth(cellSize);
+                    energyBar.setPrefHeight(cellSize * 0.2);
+                    energyBar.setMinHeight(cellSize * 0.2);
+                    
+                    if (energyPct < 0.3) {
+                        energyBar.setStyle("-fx-accent: red; ");
+                    } else if (energyPct < 0.7) {
+                        energyBar.setStyle("-fx-accent: yellow; ");
+                    } else {
+                        energyBar.setStyle("-fx-accent: #00FF00; ");
+                    }
+
+                    container.getChildren().addAll(animalRect, energyBar);
+                    mapGrid.add(container, x, y);
+
+                } else {
+                    Rectangle rect = new Rectangle(cellSize, cellSize);
+                    if (element instanceof Plant) {
+                        rect.setFill(Color.GREEN);
+                    } else {
+                        rect.setFill(Color.LIGHTGRAY);
+                    }
+                    mapGrid.add(rect, x, y);
+                }
             }
         }
     }
 
-    private void updateStatistics() {
+    private synchronized void updateStatistics() {
         animalCountLabel.setText("Zwierzęta: " + (simulation.getMaleNumber() + simulation.getFemaleNumber()));
         grassCountLabel.setText("Rośliny: " + simulation.getCurrentPlants());
         freeFieldsLabel.setText("Wolne pola: " + simulation.getFreeSpace());
         avgEnergyLabel.setText("Średnia energia: " + simulation.getAverageEnergy());
         avgLifespanLabel.setText("Średnia długość życia: " + simulation.getAverageDeadLifeLength());
         avgChildrenLabel.setText("Średnia liczba dzieci: " + simulation.getAverageChildNumber().orElse(0.0));
-        mostPopularGenotypeLabel.setText("Dominujący genotyp: " + simulation.getMostPopularGenotype()
+        mostPopularGenotypeLabel.setText("Dominujący genotyp: \n" + simulation.getMostPopularGenotype()
                 + " (" + simulation.getMostPopularGenotypeOccurrenceNumber() + " wystąpień)");
     }
 
@@ -85,10 +115,6 @@ public class SimulationWindowPresenter implements MapChangeListener {
     
     public void setSimulation(Simulation simulation) {
         this.simulation = simulation;
-    }
-
-    public void setDayDurationMillis(int dayDurationMillis) {
-        this.dayDurationMillis = dayDurationMillis;
     }
 
     public void pauseSimulation() {

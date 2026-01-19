@@ -34,8 +34,11 @@ public class StartWindowPresenter {
     @FXML private CheckBox csvSaveCheckBox;
     @FXML private TextField filePathField;
     @FXML private Button fileExplorerButton;
+    @FXML private Button loadButton;
     @FXML private Button saveButton;
     @FXML private Button startButton;
+
+    private Simulation simulation;
 
 @FXML
     public void initialize() {
@@ -43,26 +46,43 @@ public class StartWindowPresenter {
         
         startButton.setOnAction(event -> onStartClicked());
         saveButton.setOnAction(event -> onSaveClicked());
+        loadButton.setOnAction(event -> onLoadClicked());
         fileExplorerButton.setOnAction(event -> setPathByFileExplorer());
     }
 
     private void initializeFields() {
         mapWidthSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 20));
+        mapWidthSpinner.setEditable(true);
         mapHeightSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 20));
+        mapHeightSpinner.setEditable(true);
         startGrassSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 500, 50));
+        startGrassSpinner.setEditable(true);
         grassEnergySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 20));
+        grassEnergySpinner.setEditable(true);
         dailyGrassGrowthSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 10));
+        dailyGrassGrowthSpinner.setEditable(true);
         maleNumberSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 10));
+        maleNumberSpinner.setEditable(true);
         femaleNumberSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100, 10));
+        femaleNumberSpinner.setEditable(true);
         startEnergySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1000, 100));
+        startEnergySpinner.setEditable(true);
         reproductionEnergySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 500, 50));
+        reproductionEnergySpinner.setEditable(true);
         reproductionCostSpinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, 1.0, 0.5));
+        reproductionCostSpinner.setEditable(true);
         habsburgEnergyLossSpinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, 1.0, 0.2));
+        habsburgEnergyLossSpinner.setEditable(true);
         moveCostSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 50, 1));
+        moveCostSpinner.setEditable(true);
         minMutationsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 10, 1));
+        minMutationsSpinner.setEditable(true);
         maxMutationsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 10, 3));
+        maxMutationsSpinner.setEditable(true);
         genomeLengthSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 50, 8));
+        genomeLengthSpinner.setEditable(true);
         dayDurationSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 5000, 200));
+        dayDurationSpinner.setEditable(true);
         
         csvSaveCheckBox.setSelected(false);
     }
@@ -70,9 +90,9 @@ public class StartWindowPresenter {
  
     private void onStartClicked() {
         try {
-            Simulation simulation = buildSimulationFromUI();
+            simulation = buildSimulationFromUI();
 
-            SimulationWindow sim_window = new SimulationWindow(simulation, dayDurationSpinner.getValue());
+            SimulationWindow sim_window = new SimulationWindow(simulation);
             sim_window.show();
             
         } catch (IllegalStateException e) {
@@ -87,6 +107,33 @@ public class StartWindowPresenter {
             FileManager.saveSimulationParameters(buildSimulationFromUI(), filePathField.getText());
         } catch (Exception e) {
             showAlert("Błąd zapisu", "Nie udało się zapisać parametrów: " + e.getMessage());
+        }
+    }
+
+    private void onLoadClicked() {
+        try {
+            Simulation loadedSimulation = FileManager.loadSimulationParameters(filePathField.getText());
+           
+            mapWidthSpinner.getValueFactory().setValue(loadedSimulation.getMap().getWidth());
+            mapHeightSpinner.getValueFactory().setValue(loadedSimulation.getMap().getHeight());
+            startGrassSpinner.getValueFactory().setValue(loadedSimulation.getPlantStartingQuantity());
+            grassEnergySpinner.getValueFactory().setValue(loadedSimulation.getPlantEnergyGain());
+            dailyGrassGrowthSpinner.getValueFactory().setValue(loadedSimulation.getPlantDailyGrowth());
+            maleNumberSpinner.getValueFactory().setValue(loadedSimulation.getMaleNumber());
+            femaleNumberSpinner.getValueFactory().setValue(loadedSimulation.getFemaleNumber());
+            startEnergySpinner.getValueFactory().setValue(loadedSimulation.getEnergyStartLevel());
+            reproductionEnergySpinner.getValueFactory().setValue(loadedSimulation.getEnergyBreadingThreshold());
+            reproductionCostSpinner.getValueFactory().setValue(loadedSimulation.getEnergyBreadingLoss());
+            habsburgEnergyLossSpinner.getValueFactory().setValue(loadedSimulation.getHabsburgEnergyLoss());
+            moveCostSpinner.getValueFactory().setValue(loadedSimulation.getEnergyDailLoss());
+            minMutationsSpinner.getValueFactory().setValue(loadedSimulation.getMinMutation());
+            maxMutationsSpinner.getValueFactory().setValue(loadedSimulation.getMaxMutation());
+            genomeLengthSpinner.getValueFactory().setValue(loadedSimulation.getGenomLength());
+            dayDurationSpinner.getValueFactory().setValue(loadedSimulation.getDayDurationMillis());
+            csvSaveCheckBox.setSelected(loadedSimulation.isCsvSaveEnabled());
+            showAlert("Sukces", "Pomyślnie wczytano konfigurację.");
+        } catch (Exception e) {
+            showAlert("Błąd wczytywania", "Nie udało się wczytać parametrów: " + e.getMessage());
         }
     }
     

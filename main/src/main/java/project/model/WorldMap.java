@@ -1,9 +1,15 @@
 package project.model;
 
-import project.model.util.MapVisualizer;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
+
+import project.model.util.MapVisualizer;
 
 public class WorldMap implements MoveValidator {
     private final int width;
@@ -96,7 +102,7 @@ public class WorldMap implements MoveValidator {
         animals.get(newPosition).add(animal);
     }
 
-    public int consumePlants(int energyGain){
+    public synchronized int consumePlants(int energyGain){
         List<Vector2d> plantsPositionsToDelete = new ArrayList<>();
         int plantsConsumed = 0;
         for (Vector2d position:  plants.keySet()){
@@ -119,7 +125,7 @@ public class WorldMap implements MoveValidator {
         return plantsConsumed;
     }
     
-    public List<AnimalPair> procreate(int energyBreadingThreshold){
+    public synchronized List<AnimalPair> procreate(int energyBreadingThreshold){
         // Funkcja zwraca pary zwierząt, które będą się ze sobą rozmnażać
         List<AnimalPair> pairList = new ArrayList<>();
         for (Vector2d position : animals.keySet()){
@@ -164,19 +170,23 @@ public class WorldMap implements MoveValidator {
         return (animals.containsKey(position)||plants.containsKey(position));
     }
 
-    public WorldElement objectAt(Vector2d position) {
-        if (animals.containsKey(position)) {
-            if (!animals.get(position).isEmpty())
-            {
-                List<Animal> strongestAnimals = animals.get(position);
-                strongestAnimals.sort(Comparator.comparing(Animal::getEnergy).thenComparing(Animal::getAge).thenComparing(Animal::getChildrenNumber));
-                return strongestAnimals.getLast();
+    public synchronized WorldElement objectAt(Vector2d position) {
+        synchronized (animals) {
+            List<Animal> positionAnimals = animals.get(position);
+            if (positionAnimals != null && !positionAnimals.isEmpty()) {
+                List<Animal> strongestAnimals = new ArrayList<>(positionAnimals);
+                
+                strongestAnimals.sort(Comparator.comparing(Animal::getEnergy)
+                        .thenComparing(Animal::getAge)
+                        .thenComparing(Animal::getChildrenNumber));
+                
+                return strongestAnimals.get(strongestAnimals.size() - 1);
             }
         }
-        return plants.getOrDefault(position,null);
+        return plants.get(position);
     }
 
-    public int getEmptyFieldsCount() {
+    public synchronized int getEmptyFieldsCount() {
 //        HashMap<Vector2d,List<WorldElement>> elements = new HashMap<>();
 //        for (Vector2d position: animals.keySet()){
 //            elements.put(position, new ArrayList<>(animals.get(position)));
@@ -393,7 +403,7 @@ public class WorldMap implements MoveValidator {
         return list.subList(0, n);
     }
 
-    public int getAverageEnergy() {
+    public synchronized int getAverageEnergy() {
         int sum = 0;
         int n = 0;
         for (Map.Entry<Vector2d, List<Animal>> entry: animals.entrySet()) {
@@ -401,6 +411,9 @@ public class WorldMap implements MoveValidator {
                 sum += animal.getEnergy();
                 n += 1;
             }
+        }
+        if (n==0){
+            return 0;
         }
         return sum/n;
     }

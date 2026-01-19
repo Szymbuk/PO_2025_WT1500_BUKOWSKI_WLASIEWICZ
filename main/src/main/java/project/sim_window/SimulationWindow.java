@@ -9,7 +9,7 @@ import project.model.Simulation;
 public class SimulationWindow {
     private Stage window;
 
-    public SimulationWindow(Simulation simulation, int dayDurationMillis) {
+    public SimulationWindow(Simulation simulation) {
         window = new Stage();
         window.setTitle("Okno symulacji");
         FXMLLoader loader = new FXMLLoader();
@@ -19,10 +19,12 @@ public class SimulationWindow {
             loader.getController();
             SimulationWindowPresenter presenter = loader.getController();
             presenter.setSimulation(simulation);
-            presenter.setDayDurationMillis(dayDurationMillis);
             simulation.getMap().addListener(presenter);
             window.setScene(new Scene(viewRoot));
             Thread sim_thread = new Thread(simulation);
+            window.onCloseRequestProperty().set(event -> {
+                simulation.closeSimulation();
+            });
             sim_thread.start();
         } catch (Exception e) {
             e.printStackTrace();
