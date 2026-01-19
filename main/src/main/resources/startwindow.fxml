@@ -5,11 +5,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
 
-<ScrollPane xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane xmlns:fx="http://javafx.com/fxml/1"
             xmlns="http://javafx.com/javafx/17.0.2-ea"
             fx:controller="project.start.StartWindowPresenter"
-            fitToWidth="true">
-    <content>
+            >
+    <left>
         <VBox alignment="CENTER" prefHeight="820" prefWidth="600" spacing="6" style="-fx-padding: 20;">
             <Label style="-fx-font-size: 18; -fx-font-weight: bold;" text="Ustaw parametry symulacji" />
             <HBox alignment="CENTER">
@@ -107,5 +107,51 @@
                 </children>
             </HBox>
         </VBox>
-    </content>
-</ScrollPane>
+    </left>
+    <right>
+        <VBox alignment="CENTER" prefHeight="520" prefWidth="300" spacing="6" style="-fx-padding: 20;">
+                <Label text="Presety" style="-fx-font-weight: bold; -fx-font-size: 18;" />
+                
+                <HBox spacing="10" alignment="CENTER" style="-fx-padding: 20;">
+                    <Label text="1." prefWidth="20" />
+                    <Button text="Zapisz" onAction="#onSavePreset" userData="1" />
+                    <Button text="Wczytaj" onAction="#onLoadPreset" userData="1" />
+                </HBox>
+                <HBox spacing="10" alignment="CENTER" style="-fx-padding: 20;">
+                    <Label text="2." prefWidth="20" />
+                    <Button text="Zapisz" onAction="#onSavePreset" userData="2" />
+                    <Button text="Wczytaj" onAction="#onLoadPreset" userData="2" />
+                </HBox>
+                <HBox spacing="10" alignment="CENTER" style="-fx-padding: 20;">
+                    <Label text="3." prefWidth="20" />
+                    <Button text="Zapisz" onAction="#onSavePreset" userData="3" />
+                    <Button text="Wczytaj" onAction="#onLoadPreset" userData="3" />
+                </HBox>
+                <HBox spacing="10" alignment="CENTER" style="-fx-padding: 20;">
+                    <Label text="4." prefWidth="20" />
+                    <Button text="Zapisz" onAction="#onSavePreset" userData="4" />
+                    <Button text="Wczytaj" onAction="#onLoadPreset" userData="4" />
+                </HBox>
+                <HBox spacing="10" alignment="CENTER" style="-fx-padding: 20;">
+                    <Label text="5." prefWidth="20" />
+                    <Button text="Zapisz" onAction="#onSavePreset" userData="5" />
+                    <Button text="Wczytaj" onAction="#onLoadPreset" userData="5" />
+                </HBox>
+                <HBox spacing="10" alignment="CENTER" style="-fx-padding: 20;">
+                    <Label text="6." prefWidth="20" />
+                    <Button text="Zapisz" onAction="#onSavePreset" userData="6" />
+                    <Button text="Wczytaj" onAction="#onLoadPreset" userData="6" />
+                </HBox>
+                <HBox spacing="10" alignment="CENTER" style="-fx-padding: 20;">
+                    <Label text="7." prefWidth="20" />
+                    <Button text="Zapisz" onAction="#onSavePreset" userData="7" />
+                    <Button text="Wczytaj" onAction="#onLoadPreset" userData="7" />
+                </HBox>
+                <HBox spacing="10" alignment="CENTER" style="-fx-padding: 20;">
+                    <Label text="8." prefWidth="20" />
+                    <Button text="Zapisz" onAction="#onSavePreset" userData="8" />
+                    <Button text="Wczytaj" onAction="#onLoadPreset" userData="8" />
+                </HBox>
+            </VBox>
+    </right>
+</BorderPane>

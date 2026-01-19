@@ -5,8 +5,8 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -60,27 +60,30 @@ public class SimulationWindowPresenter implements MapChangeListener {
                     container.setMinSize(cellSize, cellSize);
                     container.setMaxSize(cellSize, cellSize);
 
-                    Rectangle animalRect = new Rectangle(cellSize, cellSize * 0.8); 
+                    Rectangle animalRect = new Rectangle(cellSize, cellSize * 0.7); 
                     animalRect.setFill(Color.BROWN);
 
-                    ProgressBar energyBar = new ProgressBar();
-                    
                     double energyPct = (double) animal.getEnergy() / simulation.getEnergyStartLevel();
-                    energyBar.setProgress(0.5);
                     
-                    energyBar.setPrefWidth(cellSize);
-                    energyBar.setPrefHeight(cellSize * 0.2);
-                    energyBar.setMinHeight(cellSize * 0.2);
+                    double ratio = Math.min(1.0, Math.max(0.0, energyPct));
+                    
+                    Rectangle track = new Rectangle(cellSize, cellSize * 0.2);
+                    track.setFill(Color.web("#CCCCCC"));
+
+                    Rectangle energyFill = new Rectangle(cellSize * ratio, cellSize * 0.2);
                     
                     if (energyPct < 0.3) {
-                        energyBar.setStyle("-fx-accent: red; ");
+                        energyFill.setFill(Color.RED);
                     } else if (energyPct < 0.7) {
-                        energyBar.setStyle("-fx-accent: yellow; ");
+                        energyFill.setFill(Color.YELLOW);
                     } else {
-                        energyBar.setStyle("-fx-accent: #00FF00; ");
+                        energyFill.setFill(Color.LIME);
                     }
 
-                    container.getChildren().addAll(animalRect, energyBar);
+                    StackPane energyBarContainer = new StackPane(track, energyFill);
+                    energyBarContainer.setAlignment(Pos.CENTER_LEFT);
+
+                    container.getChildren().addAll(animalRect, energyBarContainer);
                     mapGrid.add(container, x, y);
 
                 } else {

@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import project.model.util.MapVisualizer;
 
@@ -247,6 +246,7 @@ public class WorldMap implements MoveValidator {
         Random random = new Random();
         int stepCounter = 0;
         boolean flag = false;
+        // TODO : stepCounter powinien zależeć od rozmiaru mapy
         while (stepCounter<(width)*(height) && stepCounter<100) {
 
 
@@ -298,6 +298,7 @@ public class WorldMap implements MoveValidator {
         Random random = new Random();
         int stepCounter = 0;
         boolean flag = false;
+        // TODO : stepCounter powinien zależeć od rozmiaru mapy
         while (stepCounter<(width)*(height) && stepCounter<100) {
             Vector2d dessertBeginning;
             Vector2d dessertEnd;

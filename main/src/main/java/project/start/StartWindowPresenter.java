@@ -1,6 +1,7 @@
 package project.start;
 
 import java.io.File;
+import java.io.IOException;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -113,28 +114,31 @@ public class StartWindowPresenter {
     private void onLoadClicked() {
         try {
             Simulation loadedSimulation = FileManager.loadSimulationParameters(filePathField.getText());
-           
-            mapWidthSpinner.getValueFactory().setValue(loadedSimulation.getMap().getWidth());
-            mapHeightSpinner.getValueFactory().setValue(loadedSimulation.getMap().getHeight());
-            startGrassSpinner.getValueFactory().setValue(loadedSimulation.getPlantStartingQuantity());
-            grassEnergySpinner.getValueFactory().setValue(loadedSimulation.getPlantEnergyGain());
-            dailyGrassGrowthSpinner.getValueFactory().setValue(loadedSimulation.getPlantDailyGrowth());
-            maleNumberSpinner.getValueFactory().setValue(loadedSimulation.getMaleNumber());
-            femaleNumberSpinner.getValueFactory().setValue(loadedSimulation.getFemaleNumber());
-            startEnergySpinner.getValueFactory().setValue(loadedSimulation.getEnergyStartLevel());
-            reproductionEnergySpinner.getValueFactory().setValue(loadedSimulation.getEnergyBreadingThreshold());
-            reproductionCostSpinner.getValueFactory().setValue(loadedSimulation.getEnergyBreadingLoss());
-            habsburgEnergyLossSpinner.getValueFactory().setValue(loadedSimulation.getHabsburgEnergyLoss());
-            moveCostSpinner.getValueFactory().setValue(loadedSimulation.getEnergyDailLoss());
-            minMutationsSpinner.getValueFactory().setValue(loadedSimulation.getMinMutation());
-            maxMutationsSpinner.getValueFactory().setValue(loadedSimulation.getMaxMutation());
-            genomeLengthSpinner.getValueFactory().setValue(loadedSimulation.getGenomLength());
-            dayDurationSpinner.getValueFactory().setValue(loadedSimulation.getDayDurationMillis());
-            csvSaveCheckBox.setSelected(loadedSimulation.isCsvSaveEnabled());
+            loadSimulation(loadedSimulation);
             showAlert("Sukces", "Pomyślnie wczytano konfigurację.");
         } catch (Exception e) {
             showAlert("Błąd wczytywania", "Nie udało się wczytać parametrów: " + e.getMessage());
         }
+    }
+
+    private void loadSimulation(Simulation loadedSimulation) {
+        mapWidthSpinner.getValueFactory().setValue(loadedSimulation.getMap().getWidth());
+        mapHeightSpinner.getValueFactory().setValue(loadedSimulation.getMap().getHeight());
+        startGrassSpinner.getValueFactory().setValue(loadedSimulation.getPlantStartingQuantity());
+        grassEnergySpinner.getValueFactory().setValue(loadedSimulation.getPlantEnergyGain());
+        dailyGrassGrowthSpinner.getValueFactory().setValue(loadedSimulation.getPlantDailyGrowth());
+        maleNumberSpinner.getValueFactory().setValue(loadedSimulation.getMaleNumber());
+        femaleNumberSpinner.getValueFactory().setValue(loadedSimulation.getFemaleNumber());
+        startEnergySpinner.getValueFactory().setValue(loadedSimulation.getEnergyStartLevel());
+        reproductionEnergySpinner.getValueFactory().setValue(loadedSimulation.getEnergyBreadingThreshold());
+        reproductionCostSpinner.getValueFactory().setValue(loadedSimulation.getEnergyBreadingLoss());
+        habsburgEnergyLossSpinner.getValueFactory().setValue(loadedSimulation.getHabsburgEnergyLoss());
+        moveCostSpinner.getValueFactory().setValue(loadedSimulation.getEnergyDailLoss());
+        minMutationsSpinner.getValueFactory().setValue(loadedSimulation.getMinMutation());
+        maxMutationsSpinner.getValueFactory().setValue(loadedSimulation.getMaxMutation());
+        genomeLengthSpinner.getValueFactory().setValue(loadedSimulation.getGenomLength());
+        dayDurationSpinner.getValueFactory().setValue(loadedSimulation.getDayDurationMillis());
+        csvSaveCheckBox.setSelected(loadedSimulation.isCsvSaveEnabled());
     }
     
     private void setPathByFileExplorer() {
@@ -143,6 +147,34 @@ public class StartWindowPresenter {
         File selectedFile = fileChooser.showSaveDialog(fileExplorerButton.getScene().getWindow());
         if (selectedFile != null) {
             filePathField.setText(selectedFile.getAbsolutePath());
+        }
+    }
+
+    @FXML
+    private void onSavePreset(javafx.event.ActionEvent event) {
+        Button btn = (Button) event.getSource();
+        String slot = (String) btn.getUserData();
+        String fileName = "preset_" + slot + ".config";
+        try {
+            FileManager.saveSimulationParameters(buildSimulationFromUI(), fileName);
+            showAlert("Sukces", "Pomyślnie zapisano konfigurację.");
+        }
+        catch (IOException e) {
+            showAlert("Błąd zapisu", "Nie udało się zapisać presetu: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onLoadPreset(javafx.event.ActionEvent event) {
+        Button btn = (Button) event.getSource();
+        String slot = (String) btn.getUserData();
+        String fileName = "preset_" + slot + ".config";
+        try {
+            Simulation sim = FileManager.loadSimulationParameters(fileName);
+            loadSimulation(sim);
+            showAlert("Sukces", "Pomyślnie wczytano konfigurację.");
+        } catch (IOException e) {
+            showAlert("Błąd wczytywania", "Nie udało się wczytać presetu: " + e.getMessage());
         }
     }
 
