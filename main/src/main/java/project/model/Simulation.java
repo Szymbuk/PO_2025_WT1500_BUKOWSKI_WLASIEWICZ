@@ -1,14 +1,15 @@
 package project.model;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Random;
 
+import javafx.scene.chart.XYChart;
 import project.model.util.FamilyStructure;
 import project.model.util.FileManager;
 import project.model.util.StatsToFile;
@@ -44,6 +45,8 @@ public class Simulation implements Runnable {
     private int maleNumber;
     private int femaleNumber;
 
+    private final Map<String, List<XYChart.Data<Number, Number>>> graphHistory = new HashMap<>();
+
     private Simulation(SimulationBuilder builder){
         this.mapHeight = builder.mapHeight;
         this.mapWidth = builder.mapWidth;
@@ -64,6 +67,17 @@ public class Simulation implements Runnable {
         this.femaleNumber = startFemaleNumber;
         this.dayDurationMillis = builder.dayDurationMillis;
         this.csvSave = builder.csvSave;
+        String[] statNames = {
+            "Liczba zwierząt", 
+            "Liczba roślin", 
+            "Wolne pola", 
+            "Średnia energia", 
+            "Średnia długość życia", 
+            "Średnia liczba dzieci"
+        };
+        for (String name : statNames) {
+            this.graphHistory.put(name, new ArrayList<>());
+        }
 
         map = new WorldMap(mapWidth,mapHeight,1);
 
@@ -85,6 +99,7 @@ public class Simulation implements Runnable {
                     saveDayToCsv();
                 }
                 performDayCycle();
+                saveGraphHistory();
                 Thread.sleep(dayDurationMillis);
             } catch (InterruptedException e) {
                 System.err.println("Symulacja przerwana.");
@@ -118,6 +133,10 @@ public class Simulation implements Runnable {
 
     public WorldMap getMap() { return this.map; }
 
+    public Map<String, List<XYChart.Data<Number, Number>>> getGraphHistory() {
+        return this.graphHistory;
+    }
+
     public int getEnergyStartLevel() {
         return energyStartLevel;
     }
@@ -127,6 +146,17 @@ public class Simulation implements Runnable {
             StatsToFile.saveToFile(this, "daystats.csv");
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void saveGraphHistory() {
+        synchronized (graphHistory) {
+        graphHistory.get("Liczba zwierząt").add(new XYChart.Data<Number, Number>(day, animals.size()));
+        graphHistory.get("Liczba roślin").add( new XYChart.Data<Number, Number>(day, getCurrentPlants()));
+        graphHistory.get("Wolne pola").add( new XYChart.Data<Number, Number>(day, getFreeSpace()));
+        graphHistory.get("Średnia energia").add( new XYChart.Data<Number, Number>(day, getAverageEnergy()));
+        graphHistory.get("Średnia długość życia").add( new XYChart.Data<Number, Number>(day, getAverageDeadLifeLength()));
+        graphHistory.get("Średnia liczba dzieci").add( new XYChart.Data<Number, Number>(day, getAverageChildNumber().orElse(0.0)));
         }
     }
 

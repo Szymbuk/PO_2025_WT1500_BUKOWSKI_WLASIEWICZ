@@ -22,7 +22,7 @@
             <Label text="Wybierz statystykę wykresu:"/>
             <ComboBox fx:id="statChoiceBox" prefWidth="250" />
 
-            <LineChart fx:id="statChat" prefHeight="200.0" prefWidth="250.0" title="Wykres wybranej statystyki">
+            <LineChart fx:id="statChart" prefHeight="200.0" prefWidth="250.0" title="Wykres wybranej statystyki">
                 <xAxis><NumberAxis label="Dzień" side="BOTTOM"/></xAxis>
                 <yAxis><NumberAxis side="LEFT"/></yAxis>
             </LineChart>

@@ -1,9 +1,14 @@
 package project.sim_window;
 
+import java.util.List;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -49,8 +54,41 @@ public class SimulationWindowPresenter implements MapChangeListener {
     @FXML private Button highlightPreferredFieldsButton;
     @FXML private Button highlightDominantGenotypeButtton;
 
+    @FXML private LineChart<Number, Number> statChart;
+    @FXML private ComboBox<String> statChoiceBox;
+    private final XYChart.Series<Number, Number> series = new XYChart.Series<>();
+    private final String[] statNames = {
+        "Liczba zwierząt", 
+        "Liczba roślin", 
+        "Wolne pola", 
+        "Średnia energia", 
+        "Średnia długość życia", 
+        "Średnia liczba dzieci"
+    };
+
     private Simulation simulation;
     private Animal trackedAnimal;
+
+    @FXML
+    public void initialize() {
+        statChoiceBox.getItems().addAll(statNames);
+        statChoiceBox.setValue(statNames[0]);
+        statChart.getData().add(series);
+        series.setName(statNames[0]);
+
+        statChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                updateActiveSeries(newVal);
+            }
+        });
+
+    }
+
+    private void updateActiveSeries(String selectedStat) {
+        series.setName(selectedStat);
+        series.getData().clear();
+        series.getData().addAll(simulation.getGraphHistory().get(selectedStat));
+    }
 
     @Override
     public void mapChanged(WorldMap worldMap, String message) {
@@ -138,6 +176,16 @@ public class SimulationWindowPresenter implements MapChangeListener {
         avgChildrenLabel.setText("Średnia liczba dzieci: %.2f".formatted(simulation.getAverageChildNumber().orElse(0.0)));
         mostPopularGenotypeLabel.setText("Dominujący genotyp: \n" + simulation.getMostPopularGenotype()
                 + " (" + simulation.getMostPopularGenotypeOccurrenceNumber() + " wystąpień)");
+
+        String selected = statChoiceBox.getValue();
+        List<XYChart.Data<Number, Number>> currentHistory = simulation.getGraphHistory().get(selected);
+
+        int displayedCount = series.getData().size();
+
+        if (displayedCount < currentHistory.size()) {
+            List<XYChart.Data<Number, Number>> newPoints = currentHistory.subList(displayedCount, currentHistory.size());
+            series.getData().addAll(newPoints);
+        }
     }
 
     private void updateTrackedAnimalUI() {
