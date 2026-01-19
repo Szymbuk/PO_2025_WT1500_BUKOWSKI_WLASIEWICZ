@@ -17,6 +17,8 @@ public class Animal implements WorldElement{
     private int childrenNumber = 0;
     private int age = 0;
     private Node familyStructureNode;
+    private int dayOfDeath;
+    private int grassEaten = 0;
 
 
     public Animal(Vector2d position,int genNumber, Gender gender, int energy){
@@ -96,6 +98,10 @@ public class Animal implements WorldElement{
         return position;
     }
 
+    public int getDayOfDeath() {
+        return dayOfDeath;
+    }
+
     public MapDirection getOrientation(){
         return orientation;
     }
@@ -125,6 +131,7 @@ public class Animal implements WorldElement{
 
     public void eat(int energyGained){
         energy += energyGained;
+        grassEaten++;
     }
 
     public int getEnergy() {
@@ -141,6 +148,14 @@ public class Animal implements WorldElement{
 
     public int getAge() {
         return age;
+    }
+
+    public int getGrassEaten() {
+        return grassEaten;
+    }
+
+    public void setDayOfDeath(int day) {
+        dayOfDeath = day;
     }
 
     public void addAge(){

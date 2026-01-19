@@ -10,6 +10,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeType;
 import javafx.stage.Stage;
 import project.model.Animal;
 import project.model.MapChangeListener;
@@ -29,17 +30,33 @@ public class SimulationWindowPresenter implements MapChangeListener {
     @FXML private Label avgEnergyLabel;
     @FXML private Label avgLifespanLabel;
     @FXML private Label avgChildrenLabel;
+
     @FXML private Button pauseButton;
     @FXML private Button resumeButton;
     @FXML private Button closeButton;
 
+    @FXML private Label trackedGenotypeLabel;
+    @FXML private Label trackedActiveGeneLabel;
+    @FXML private Label trackedEnergyLabel;
+    @FXML private Label trackedGrassEatenLabel;
+    @FXML private Label trackedChildrenLabel;
+    @FXML private Label trackedDescendantsLabel;
+    @FXML private Label trackedAgeLabel;
+    @FXML private Label trackedDeathDayLabel;
+
+    @FXML private Button stopTrackingButton;
+    @FXML private Button highlightPreferredFieldsButton;
+    @FXML private Button highlightDominantGenotypeButtton;
+
     private Simulation simulation;
+    private Animal trackedAnimal;
 
     @Override
     public void mapChanged(WorldMap worldMap, String message) {
         Platform.runLater(() -> {
                 drawMap(worldMap);
                 updateStatistics();
+                updateTrackedAnimalUI();
         });
     }
 
@@ -54,38 +71,12 @@ public class SimulationWindowPresenter implements MapChangeListener {
                 Vector2d position = new Vector2d(x, y);
                 WorldElement element = map.objectAt(position);
 
+                if (trackedAnimal != null && trackedAnimal.getPosition().equals(position)) {
+                    drawAnimalInCell(trackedAnimal, x, y, true, cellSize);
+                } else {
+
                 if (element instanceof Animal animal) {
-                    VBox container = new VBox(0);
-                    container.setAlignment(Pos.CENTER);
-                    container.setMinSize(cellSize, cellSize);
-                    container.setMaxSize(cellSize, cellSize);
-
-                    Rectangle animalRect = new Rectangle(cellSize, cellSize * 0.7); 
-                    animalRect.setFill(Color.BROWN);
-
-                    double energyPct = (double) animal.getEnergy() / simulation.getEnergyStartLevel();
-                    
-                    double ratio = Math.min(1.0, Math.max(0.0, energyPct));
-                    
-                    Rectangle track = new Rectangle(cellSize, cellSize * 0.2);
-                    track.setFill(Color.web("#CCCCCC"));
-
-                    Rectangle energyFill = new Rectangle(cellSize * ratio, cellSize * 0.2);
-                    
-                    if (energyPct < 0.3) {
-                        energyFill.setFill(Color.RED);
-                    } else if (energyPct < 0.7) {
-                        energyFill.setFill(Color.YELLOW);
-                    } else {
-                        energyFill.setFill(Color.LIME);
-                    }
-
-                    StackPane energyBarContainer = new StackPane(track, energyFill);
-                    energyBarContainer.setAlignment(Pos.CENTER_LEFT);
-
-                    container.getChildren().addAll(animalRect, energyBarContainer);
-                    mapGrid.add(container, x, y);
-
+                    drawAnimalInCell(animal, x, y, false, cellSize);
                 } else {
                     Rectangle rect = new Rectangle(cellSize, cellSize);
                     if (element instanceof Plant) {
@@ -96,7 +87,41 @@ public class SimulationWindowPresenter implements MapChangeListener {
                     mapGrid.add(rect, x, y);
                 }
             }
+            }
         }
+    }
+
+    private void drawAnimalInCell(Animal animal, int x, int y, boolean isTracked, double cellSize) {
+        VBox container = new VBox(0);
+        container.setAlignment(Pos.CENTER);
+
+        Rectangle animalRect = new Rectangle(cellSize, cellSize * 0.7);
+        animalRect.setFill(Color.BROWN); 
+
+        if (isTracked) {
+            animalRect.setStroke(Color.BLACK);
+            animalRect.setStrokeWidth(3);
+            animalRect.setStrokeType(StrokeType.INSIDE);
+            
+            javafx.scene.effect.DropShadow glow = new javafx.scene.effect.DropShadow();
+            glow.setColor(Color.BLACK);
+            glow.setRadius(10);
+            animalRect.setEffect(glow);
+        }
+
+        double energyPct = (double) animal.getEnergy() / simulation.getEnergyStartLevel();
+        Rectangle energyBar = new Rectangle(cellSize * Math.min(1.0, energyPct), cellSize * 0.2);
+        energyBar.setFill(energyPct < 0.3 ? Color.RED : (energyPct < 0.7 ? Color.YELLOW : Color.LIME));
+
+        container.getChildren().addAll(animalRect, energyBar);
+        
+        container.setOnMouseClicked(event -> {
+            this.trackedAnimal = animal;
+            updateTrackedAnimalUI();
+            drawMap(simulation.getMap()); 
+        });
+
+        mapGrid.add(container, x, y);
     }
 
     private synchronized void updateStatistics() {
@@ -108,6 +133,35 @@ public class SimulationWindowPresenter implements MapChangeListener {
         avgChildrenLabel.setText("Średnia liczba dzieci: " + simulation.getAverageChildNumber().orElse(0.0));
         mostPopularGenotypeLabel.setText("Dominujący genotyp: \n" + simulation.getMostPopularGenotype()
                 + " (" + simulation.getMostPopularGenotypeOccurrenceNumber() + " wystąpień)");
+    }
+
+    private void updateTrackedAnimalUI() {
+        if (trackedAnimal == null) {
+            trackedGenotypeLabel.setText("Genom: -");
+            trackedActiveGeneLabel.setText("Indeks genu: -");
+            trackedEnergyLabel.setText("Energia: -");
+            trackedAgeLabel.setText("Wiek: -");
+            trackedChildrenLabel.setText("Dzieci: -");
+            trackedDeathDayLabel.setText("Dzień śmierci: -");
+            trackedGrassEatenLabel.setText("Zjedzona trawa: -");
+            trackedDescendantsLabel.setText("Potomkowie: -");
+            return;
+        }
+
+        trackedGenotypeLabel.setText("Genom: " + trackedAnimal.getGenotype().toString());
+        trackedEnergyLabel.setText("Energia: " + trackedAnimal.getEnergy());
+        trackedAgeLabel.setText("Wiek: " + trackedAnimal.getAge());
+        trackedChildrenLabel.setText("Dzieci: " + trackedAnimal.getChildrenNumber());
+        // TODO: Metoda w Animal zwracajaca ilosc potomkow
+        trackedDescendantsLabel.setText("Potomkowie: " + "TODO");
+        trackedActiveGeneLabel.setText("Indeks genu: " + trackedAnimal.getCurrentGeneIndex());
+        trackedGrassEatenLabel.setText("Zjedzona trawa: " + trackedAnimal.getGrassEaten());
+        
+        if (trackedAnimal.getEnergy() <= 0){
+            trackedDeathDayLabel.setText("Dzień śmierci: " + trackedAnimal.getDayOfDeath());
+        } else {
+            trackedDeathDayLabel.setText("Dzień śmierci: -");
+        }
     }
 
     private void clearGrid() {
@@ -136,5 +190,11 @@ public class SimulationWindowPresenter implements MapChangeListener {
         this.simulation.closeSimulation();
         Stage stage = (Stage) closeButton.getScene().getWindow();
         stage.close();
+    }
+
+    @FXML
+    private void stopTracking() {
+        this.trackedAnimal = null;
+        updateTrackedAnimalUI();
     }
 }

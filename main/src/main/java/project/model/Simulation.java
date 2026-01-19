@@ -159,6 +159,7 @@ public class Simulation implements Runnable {
         synchronized (animals) {
             for (Animal animal : animals){
                 if (animal.getEnergy()<=0){
+                    animal.setDayOfDeath(day);
                     synchronized (map) {
                         map.removeAnimal(animal);
                     }
