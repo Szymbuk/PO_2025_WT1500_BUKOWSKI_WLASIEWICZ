@@ -6,13 +6,13 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 import javafx.stage.Stage;
 import project.model.Animal;
+import project.model.Gender;
 import project.model.MapChangeListener;
 import project.model.Plant;
 import project.model.Simulation;
@@ -43,6 +43,7 @@ public class SimulationWindowPresenter implements MapChangeListener {
     @FXML private Label trackedDescendantsLabel;
     @FXML private Label trackedAgeLabel;
     @FXML private Label trackedDeathDayLabel;
+    @FXML private Label trackedGenderLabel;
 
     @FXML private Button stopTrackingButton;
     @FXML private Button highlightPreferredFieldsButton;
@@ -96,7 +97,11 @@ public class SimulationWindowPresenter implements MapChangeListener {
         container.setAlignment(Pos.CENTER);
 
         Rectangle animalRect = new Rectangle(cellSize, cellSize * 0.7);
-        animalRect.setFill(Color.BROWN); 
+        if (animal.getGender().equals(Gender.Male)) {
+            animalRect.setFill(Color.PINK); 
+        } else {
+            animalRect.setFill(Color.BLUE); 
+        }
 
         if (isTracked) {
             animalRect.setStroke(Color.BLACK);
@@ -130,13 +135,14 @@ public class SimulationWindowPresenter implements MapChangeListener {
         freeFieldsLabel.setText("Wolne pola: " + simulation.getFreeSpace());
         avgEnergyLabel.setText("Średnia energia: " + simulation.getAverageEnergy());
         avgLifespanLabel.setText("Średnia długość życia: " + simulation.getAverageDeadLifeLength());
-        avgChildrenLabel.setText("Średnia liczba dzieci: " + simulation.getAverageChildNumber().orElse(0.0));
+        avgChildrenLabel.setText("Średnia liczba dzieci: %.2f".formatted(simulation.getAverageChildNumber().orElse(0.0)));
         mostPopularGenotypeLabel.setText("Dominujący genotyp: \n" + simulation.getMostPopularGenotype()
                 + " (" + simulation.getMostPopularGenotypeOccurrenceNumber() + " wystąpień)");
     }
 
     private void updateTrackedAnimalUI() {
         if (trackedAnimal == null) {
+            trackedGenderLabel.setText("Płeć: -");
             trackedGenotypeLabel.setText("Genom: -");
             trackedActiveGeneLabel.setText("Indeks genu: -");
             trackedEnergyLabel.setText("Energia: -");
@@ -148,6 +154,7 @@ public class SimulationWindowPresenter implements MapChangeListener {
             return;
         }
 
+        trackedGenderLabel.setText("Płeć: " + trackedAnimal.getGender().toString());
         trackedGenotypeLabel.setText("Genom: " + trackedAnimal.getGenotype().toString());
         trackedEnergyLabel.setText("Energia: " + trackedAnimal.getEnergy());
         trackedAgeLabel.setText("Wiek: " + trackedAnimal.getAge());

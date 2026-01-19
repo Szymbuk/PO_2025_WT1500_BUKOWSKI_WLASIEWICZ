@@ -396,8 +396,6 @@ public class WorldMap implements MoveValidator {
 
     public List<Map.Entry<List<Integer>, Integer>> getMostPopularGenotypes(int n) {
         List<Map.Entry<List<Integer>, Integer>> list = new ArrayList<>(genotypeCountMap.entrySet());
-        // to rzucało błąd, dlatego podmieniłem
-        // list.sort((Comparator<? super Map.Entry<List<Integer>, Integer>>) Map.Entry.comparingByValue().reversed());
         list.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
         return list.subList(0, n);
     }

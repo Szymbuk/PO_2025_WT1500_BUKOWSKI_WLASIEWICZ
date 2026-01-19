@@ -18,16 +18,13 @@
             <Label fx:id="avgLifespanLabel" text="Średnia długość życia: 0" />
             <Label fx:id="avgChildrenLabel" text="Średnia liczba dzieci: 0" />
 
-            <!-- Wykres liczby zwierząt -->
-            <LineChart fx:id="animalChart" prefHeight="200.0" prefWidth="250.0" title="Zwierzęta w czasie">
-                <xAxis><NumberAxis label="Dzień" /></xAxis>
-                <yAxis><NumberAxis label="Zwierzęta" /></yAxis>
-            </LineChart>
+            <Separator />
+            <Label text="Wybierz statystykę wykresu:"/>
+            <ComboBox fx:id="statChoiceBox" prefWidth="250" />
 
-            <!-- Wykres liczby roślin -->
-            <LineChart fx:id="grassChart" prefHeight="200.0" prefWidth="250.0" title="Rośliny w czasie">
-                <xAxis><NumberAxis label="Dzień" /></xAxis>
-                <yAxis><NumberAxis label="Rośliny" /></yAxis>
+            <LineChart fx:id="statChat" prefHeight="200.0" prefWidth="250.0" title="Wykres wybranej statystyki">
+                <xAxis><NumberAxis label="Dzień" side="BOTTOM"/></xAxis>
+                <yAxis><NumberAxis side="LEFT"/></yAxis>
             </LineChart>
 
             <HBox alignment="CENTER" spacing="10">
@@ -50,6 +47,7 @@
     <right>
         <VBox alignment="CENTER" prefWidth="250" spacing="15">
             <Label style="-fx-font-size: 20px; -fx-font-weight: bold;" text="Śledzony zwierzak" />
+            <Label fx:id="trackedGenderLabel" text="Płeć: -" />
             <Label fx:id="trackedGenotypeLabel" text="Genom: -" />
             <Label fx:id="trackedActiveGeneLabel" text="Aktywny gen: -" />
             <Label fx:id="trackedEnergyLabel" text="Energia: -" />
