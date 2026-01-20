@@ -8,6 +8,7 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml/1"
             xmlns="http://javafx.com/javafx/17.0.2-ea"
             fx:controller="project.start.StartWindowPresenter"
+            stylesheets="@startstyle.css"
             >
     <left>
         <VBox alignment="CENTER" prefHeight="820" prefWidth="600" spacing="6" style="-fx-padding: 20;">

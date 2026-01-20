@@ -1,0 +1,68 @@
+/* Main Window */
+.root {
+    -fx-background-color: #1e1e1e;
+}
+
+/* Labels - Explicitly white */
+.label {
+    -fx-text-fill: #ffffff !important;
+}
+
+/* Buttons */
+.button {
+    -fx-background-color: #3d3d3d;
+    -fx-text-fill: #ffffff !important; /* Ensure text is visible */
+    -fx-font-weight: bold;
+    -fx-border-color: #555555;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.button:hover {
+    -fx-background-color: #505050;
+}
+
+.button:pressed {
+    -fx-background-color: #222222;
+}
+
+/* ComboBox (The Switch) */
+.combo-box {
+    -fx-background-color: #3d3d3d;
+    -fx-border-color: #555555;
+    -fx-text-fill: #ffffff;
+}
+
+/* This fixes the text inside the ComboBox box itself */
+.combo-box > .list-cell {
+    -fx-text-fill: #ffffff !important;
+}
+
+/* This fixes the text inside the Dropdown Menu */
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: #3d3d3d;
+    -fx-text-fill: #ffffff !important;
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #505050;
+}
+
+/* Charts */
+.chart-plot-background {
+    -fx-background-color: #121212;
+}
+
+.axis-label {
+    -fx-text-fill: #f1c40f !important;
+}
+
+.axis {
+    -fx-tick-label-fill: #ffffff !important;
+}
+
+/* Map Grid */
+#mapGrid {
+    -fx-background-color: #252525;
+    -fx-border-color: #444444;
+}

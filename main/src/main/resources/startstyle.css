@@ -1,0 +1,61 @@
+/* ScrollPane Background */
+.scroll-pane {
+    -fx-background-color: #1e1e1e;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: #1e1e1e;
+}
+
+/* Spinner Styling (The parameter inputs) */
+.spinner {
+    -fx-background-color: #3d3d3d;
+    -fx-border-color: #555555;
+    -fx-border-radius: 3;
+}
+
+.spinner .text-field {
+    -fx-background-color: #3d3d3d;
+    -fx-text-fill: white;
+}
+
+.spinner .increment-arrow-button, .spinner .decrement-arrow-button {
+    -fx-background-color: #4a4a4a;
+    -fx-background-radius: 0;
+}
+
+.spinner .increment-arrow-button:hover, .spinner .decrement-arrow-button:hover {
+    -fx-background-color: #666666;
+}
+
+/* TextFields and CheckBoxes */
+.text-field {
+    -fx-background-color: #3d3d3d;
+    -fx-text-fill: white;
+    -fx-border-color: #555555;
+    -fx-prompt-text-fill: #888888;
+}
+
+.check-box .box {
+    -fx-background-color: #3d3d3d;
+    -fx-border-color: #555555;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #f1c40f; /* Gold mark */
+}
+
+/* Specific button styles for the bottom row */
+#startButton {
+    -fx-background-color: #2d5a27;
+    -fx-font-size: 14px;
+}
+
+#startButton:hover {
+    -fx-background-color: #3d7a35;
+}
+
+/* Separator styling */
+.separator .line {
+    -fx-border-color: #444444;
+}
