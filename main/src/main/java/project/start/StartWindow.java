@@ -15,7 +15,7 @@ public class StartWindow extends Application {
         BorderPane viewRoot = loader.load();
         loader.getController();
 
-        StartWindowPresenter presenter = loader.getController();
+        StartWindowPresenter _ = loader.getController();
 
         configureStage(primaryStage, viewRoot);
         primaryStage.show();

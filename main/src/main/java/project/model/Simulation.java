@@ -293,6 +293,7 @@ public class Simulation implements Runnable {
         }
     }
 
+    @SuppressWarnings("unused")
     private void saveToFile(String path) throws IOException {
         FileManager.saveSimulationDataToCSV(this,path);
     }
