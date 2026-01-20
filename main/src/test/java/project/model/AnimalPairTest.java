@@ -20,7 +20,7 @@ class AnimalPairTest {
             FamilyStructure family = new FamilyStructure();
             family.addAnimal(a1,null);
             family.addAnimal(a2,null);
-            Animal baby = pair.breed(8,0.1,0,0,10,10,family,0.0);
+            Animal baby = pair.breed(8,0.1,0,0,10,10,family,0.0, false);
             assertEquals(energyBefore,a1.getEnergy()+a2.getEnergy()+ baby.getEnergy());
         }
 
@@ -43,7 +43,7 @@ class AnimalPairTest {
 
             family.addAnimal(a1,parents);
             family.addAnimal(a2,parents);
-            Animal baby = pair.breed(8,0.1,0,0,10,10,family,0.0);
+            Animal baby = pair.breed(8,0.1,0,0,10,10,family,0.0, false);
             assertEquals(energyBefore,a1.getEnergy()+a2.getEnergy()+ baby.getEnergy());
         }
 
@@ -66,7 +66,7 @@ class AnimalPairTest {
 
             family.addAnimal(a1,parents);
             family.addAnimal(a2,parents);
-            Animal baby = pair.breed(8,0.1,0,0,10,10,family,1.0);
+            Animal baby = pair.breed(8,0.1,0,0,10,10,family,1.0, false);
             assertTrue(energyBefore>a1.getEnergy()+a2.getEnergy()+ baby.getEnergy());
         }
 
@@ -81,7 +81,7 @@ class AnimalPairTest {
 
             family.addAnimal(a1,null);
             family.addAnimal(a2,null);
-            Animal baby = pair.breed(8,0.1,0,0,10,10,family,1.0);
+            Animal baby = pair.breed(8,0.1,0,0,10,10,family,1.0, false);
             assertEquals(a1.getGenotype().size(),baby.getGenotype().size());
             assertEquals(a2.getGenotype().size(),baby.getGenotype().size());
             assertEquals(a1.getGenotype().size(),a2.getGenotype().size());
@@ -99,7 +99,7 @@ class AnimalPairTest {
             family.addAnimal(a1,null);
             family.addAnimal(a2,null);
             for (int i = 0; i<100000; i++) {
-                Animal baby = pair.breed(8, 0.1, 0, 0, 10, 10, family, 1.0);
+                Animal baby = pair.breed(8, 0.1, 0, 0, 10, 10, family, 1.0, false);
                 assertTrue(baby.getGenotype().getLast() == 0 || baby.getGenotype().getLast() ==1);
             }
         }
@@ -114,7 +114,7 @@ class AnimalPairTest {
             family.addAnimal(a1,null);
             family.addAnimal(a2,null);
             for (int i = 0; i<100000; i++) {
-                Animal baby = pair.breed(8, 0.1, 0, 0, 10, 10, family, 1.0);
+                Animal baby = pair.breed(8, 0.1, 0, 0, 10, 10, family, 1.0, false);
                 assertTrue((baby.getGenotype().subList(0,4).equals(a1.getGenotype().subList(0,4)) && baby.getGenotype().subList(4,8).equals(a2.getGenotype().subList(4,8)))||
                         baby.getGenotype().subList(0,4).equals(a2.getGenotype().subList(0,4)) && baby.getGenotype().subList(4,8).equals(a1.getGenotype().subList(4,8)));
             }

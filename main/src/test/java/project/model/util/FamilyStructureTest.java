@@ -22,8 +22,8 @@ class FamilyStructureTest {
         assertNull(family.relationshipLevel(pair).orElse(null));
 
 
-        Animal baby1 = pair.breed(8,0.1,0,0,10,10,family,0.1);
-        Animal baby2 = pair.breed(8,0.1,0,0,10,10,family,0.1);
+        Animal baby1 = pair.breed(8,0.1,0,0,10,10,family,0.1, false);
+        Animal baby2 = pair.breed(8,0.1,0,0,10,10,family,0.1, false);
         family.addAnimal(baby1,pair);
         family.addAnimal(baby2,pair);
         assertEquals(2,family.relationshipLevel(new AnimalPair(baby1,baby2)).orElse(100));

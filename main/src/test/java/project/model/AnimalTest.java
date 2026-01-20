@@ -50,7 +50,7 @@ class AnimalTest {
         int childNumber = animal.getChildrenNumber();
         int startEnergy = animal.getEnergy();
 
-        animal.breed(true,2,energyLoss);
+        animal.breed(true,2,energyLoss, false);
 
         assertEquals(startEnergy-energyLoss, animal.getEnergy());
         assertEquals(childNumber+1,animal.getChildrenNumber());

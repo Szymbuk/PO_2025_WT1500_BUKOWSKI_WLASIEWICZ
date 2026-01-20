@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.Random;
 
 public record AnimalPair(Animal male, Animal female) {
-    public Animal breed(int genomLength, double energyBreadingLoss,int minMutation, int maxMutation, int mapWidth, int mapHeight, FamilyStructure familyStructure,double habsburgEnergyLoss){
+    public Animal breed(int genomLength, double energyBreadingLoss,int minMutation, int maxMutation, int mapWidth, int mapHeight, FamilyStructure familyStructure,double habsburgEnergyLoss, boolean trackDescendants){
         Random random = new Random();
         int totalEnergy = male.getEnergy() + female.getEnergy();
         double malePart = (double) male.getEnergy() /totalEnergy;
@@ -18,12 +18,12 @@ public record AnimalPair(Animal male, Animal female) {
         int maleEnergyLoss = (int) (male.getEnergy()*energyBreadingLoss);
         int femaleEnergyLoss = (int) (female.getEnergy()*energyBreadingLoss);
         if (random.nextBoolean()){
-            newGenotype.addAll(male.breed(true,maleGens,maleEnergyLoss));
-            newGenotype.addAll(female.breed(false,femaleGens,femaleEnergyLoss));
+            newGenotype.addAll(male.breed(true,maleGens,maleEnergyLoss, trackDescendants));
+            newGenotype.addAll(female.breed(false,femaleGens,femaleEnergyLoss, trackDescendants));
         }
         else{
-            newGenotype.addAll(female.breed(true,femaleGens,femaleEnergyLoss));
-            newGenotype.addAll(male.breed(false,maleGens,maleEnergyLoss));
+            newGenotype.addAll(female.breed(true,femaleGens,femaleEnergyLoss, trackDescendants));
+            newGenotype.addAll(male.breed(false,maleGens,maleEnergyLoss, trackDescendants));
         }
         int numberOfMutations = random.nextInt(minMutation,maxMutation+1);
         for (int i = 0; i<numberOfMutations; i+=1){

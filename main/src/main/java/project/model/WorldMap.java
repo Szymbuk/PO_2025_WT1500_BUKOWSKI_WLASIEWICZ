@@ -174,7 +174,6 @@ public class WorldMap implements MoveValidator {
             List<Animal> positionAnimals = animals.get(position);
             if (positionAnimals != null && !positionAnimals.isEmpty()) {
                 List<Animal> strongestAnimals = new ArrayList<>(positionAnimals);
-                
                 strongestAnimals.sort(Comparator.comparing(Animal::getEnergy)
                         .thenComparing(Animal::getAge)
                         .thenComparing(Animal::getChildrenNumber));

@@ -29,6 +29,7 @@ public class Simulation implements Runnable {
     private final int minMutation;
     private final int maxMutation;
     private final int genomLength;
+    private final boolean trackDescendants;
 
     private final int dayDurationMillis;
     private final boolean csvSave;
@@ -66,6 +67,7 @@ public class Simulation implements Runnable {
         this.femaleNumber = startFemaleNumber;
         this.dayDurationMillis = builder.dayDurationMillis;
         this.csvSave = builder.csvSave;
+        this.trackDescendants = builder.trackDescendants;
         String[] statNames = {
             "Liczba zwierząt", 
             "Liczba roślin", 
@@ -263,7 +265,7 @@ public class Simulation implements Runnable {
 //            };
 //            int energyOfNewAnimal = (int) ((maleEnergyLoss + femaleEnergyLoss) * habsburgEnergyLossCalculation(animalPair));
 //            Animal newAnimal = new Animal(position,newGenotype,newGender, energyOfNewAnimal);
-            Animal newAnimal = animalPair.breed(genomLength,energyBreadingLoss,minMutation,maxMutation,mapWidth,mapHeight,familyStructure,habsburgEnergyLoss);
+            Animal newAnimal = animalPair.breed(genomLength,energyBreadingLoss,minMutation,maxMutation,mapWidth,mapHeight,familyStructure,habsburgEnergyLoss, trackDescendants);
             map.place(newAnimal);
             animals.add(newAnimal);
             familyStructure.addAnimal(newAnimal,animalPair);
@@ -403,6 +405,7 @@ public class Simulation implements Runnable {
         private Integer maxMutation;
         private Integer dayDurationMillis;
         private boolean csvSave;
+        private boolean trackDescendants;
 
 
 
@@ -495,6 +498,11 @@ public class Simulation implements Runnable {
         public SimulationBuilder setMap(Integer width, Integer height){
             this.mapHeight = height;
             this.mapWidth = width;
+            return this;
+        }
+        
+        public SimulationBuilder setTrackDescendants(boolean track) {
+            this.trackDescendants = track;
             return this;
         }
 

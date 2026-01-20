@@ -33,6 +33,7 @@ public class StartWindowPresenter {
     @FXML private Spinner<Integer> genomeLengthSpinner;
     @FXML private Spinner<Integer> dayDurationSpinner;
     @FXML private CheckBox csvSaveCheckBox;
+    @FXML private CheckBox trackDescendantsCheckBox;
     @FXML private TextField filePathField;
     @FXML private Button fileExplorerButton;
     @FXML private Button loadButton;
@@ -86,6 +87,7 @@ public class StartWindowPresenter {
         dayDurationSpinner.setEditable(true);
         
         csvSaveCheckBox.setSelected(false);
+        trackDescendantsCheckBox.setSelected(true);
     }
 
  
@@ -204,6 +206,7 @@ public class StartWindowPresenter {
                 )
                 .setDayDurationMillis(dayDurationSpinner.getValue())
                 .setCsvSave(csvSaveCheckBox.isSelected())
+                .setTrackDescendants(trackDescendantsCheckBox.isSelected())
                 .build();
     }
 

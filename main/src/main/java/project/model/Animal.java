@@ -3,10 +3,8 @@ package project.model;
 
 import project.model.util.Node;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Random;
 import java.util.Stack;
 
@@ -129,10 +127,12 @@ public class Animal implements WorldElement{
         orientation = orientation.rotate(gene);
     }
 
-    public List<Integer> breed(boolean leftside, int n,int energyLoss){
+    public List<Integer> breed(boolean leftside, int n,int energyLoss, boolean trackDescendants){
         energy -= energyLoss;
         childrenNumber +=1;
-        incrementDescendants();
+        if (trackDescendants) {
+            incrementDescendants();
+        }
 
         if (leftside){
             return genotype.subList(0,n);

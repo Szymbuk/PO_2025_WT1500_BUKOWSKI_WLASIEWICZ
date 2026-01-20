@@ -88,8 +88,13 @@
                         <!-- CSV Save -->
                         <Label text="Zapisać do CSV?" GridPane.rowIndex="16" GridPane.columnIndex="0" />
                         <CheckBox fx:id="csvSaveCheckBox" GridPane.rowIndex="16" GridPane.columnIndex="1" />
-                        <Label text="Zapis konfiguracji do pliku:" GridPane.rowIndex="17" GridPane.columnIndex="0" />
-                        <HBox spacing="5" GridPane.rowIndex="17" GridPane.columnIndex="1">
+
+                        <!-- Track Descendants -->
+                        <Label text="Zliczanie potomków: " GridPane.rowIndex="17" GridPane.columnIndex="0" />
+                        <CheckBox fx:id="trackDescendantsCheckBox" GridPane.rowIndex="17" GridPane.columnIndex="1" />
+
+                        <Label text="Zapis konfiguracji do pliku:" GridPane.rowIndex="18" GridPane.columnIndex="0" />
+                        <HBox spacing="5" GridPane.rowIndex="18" GridPane.columnIndex="1">
                             <children>
                                 <TextField fx:id="filePathField" promptText="Ścieżka do pliku konfiguracji" />
                                 <Button fx:id="fileExplorerButton" text="Przeglądaj" />
